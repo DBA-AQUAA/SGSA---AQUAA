@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sistema de Gestión de Solicitudes de Almacén de Aquaa" />
+  <title>SGSA | Aquaa</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-logo" src="img/logo-aquaa.png" alt="Logo de Aquaa" />
+      <div><strong>Aquaa</strong><span>Sistema de Gestión de Solicitudes de Almacén</span></div>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero">
+      <p class="eyebrow">SOLICITUD DE INSUMOS</p>
+      <h1>Nueva solicitud de almacén</h1>
+      <p>Captura tus datos, agrega los productos que necesitas y envía la solicitud.</p>
+    </section>
+
+    <form id="requestForm" class="form-layout" novalidate>
+      <section class="card">
+        <div class="section-heading"><span class="step">1</span><div><h2>Datos del solicitante</h2><p>Los campos marcados con * son obligatorios.</p></div></div>
+        <div class="grid two-cols">
+          <label class="field"><span>Nombre completo *</span><input id="fullName" type="text" required /><small class="error-message"></small></label>
+          <label class="field"><span>Correo electrónico *</span><input id="email" type="email" required /><small class="error-message"></small></label>
+          <label class="field"><span>Área *</span><select id="area" required><option value="">Selecciona un área</option><option>Administración</option><option>Almacén</option><option>Campo</option><option>Compras</option><option>Contabilidad</option><option>Dirección</option><option>Imagen</option><option>Recursos Humanos</option><option>Reparación de fugas</option><option>Sistemas</option><option>Otra</option></select><small class="error-message"></small></label>
+          <label class="field"><span>Sucursal *</span><select id="branch" required><option value="">Selecciona una sucursal</option><option>Querétaro</option><option>San Juan del Río</option><option>Otra</option></select><small class="error-message"></small></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><span class="step">2</span><div><h2>Productos solicitados</h2><p>Selecciona una categoría, busca el producto e indica la cantidad.</p></div></div>
+        <div class="product-builder">
+          <label class="field"><span>Categoría *</span><select id="category"><option value="">Selecciona una categoría</option></select></label>
+          <label class="field product-search-field"><span>Producto *</span><input id="productSearch" type="search" placeholder="Primero selecciona una categoría" autocomplete="off" disabled /><div id="productResults" class="results-list" hidden></div></label>
+          <label class="field"><span>Cantidad *</span><input id="quantity" type="number" min="0.01" step="0.01" placeholder="Ej. 2" /></label>
+          <label class="field"><span>Unidad</span><input id="unit" type="text" readonly /></label>
+          <button id="addProductBtn" class="button secondary add-button" type="button">+ Agregar producto</button>
+        </div>
+        <div id="emptyProducts" class="empty-state">Aún no has agregado productos.</div>
+        <div id="productsTableWrapper" class="table-wrapper" hidden><table><thead><tr><th>Producto</th><th>Categoría</th><th>Cantidad</th><th>Unidad</th><th></th></tr></thead><tbody id="productsTableBody"></tbody></table></div>
+        <p id="productError" class="form-alert error" hidden></p>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><span class="step">3</span><div><h2>Información adicional</h2><p>Agrega detalles que ayuden al personal de almacén.</p></div></div>
+        <label class="field"><span>Observaciones</span><textarea id="notes" rows="5" placeholder="Ej. especificaciones, medidas, color o uso del material."></textarea></label>
+        <label class="field"><span>Imagen de referencia (opcional)</span><input id="attachment" type="file" accept="image/png,image/jpeg,image/webp" /><small>JPG, PNG o WEBP. Máximo 5 MB.</small><small id="fileError" class="error-message"></small></label>
+      </section>
+
+      <section class="actions-card">
+        <label class="consent"><input id="confirmation" type="checkbox" required /><span>Confirmo que los datos capturados son correctos.</span></label>
+        <div class="actions"><button class="button ghost" type="reset">Limpiar</button><button id="submitBtn" class="button primary" type="submit">Enviar solicitud</button></div>
+        <p id="submitStatus" class="form-alert" hidden></p>
+      </section>
+    </form>
+  </main>
+
+  <template id="successTemplate"><div class="modal-backdrop"><section class="modal"><div class="success-icon">✓</div><h2>Solicitud enviada</h2><p>Tu solicitud fue registrada correctamente.</p><div class="folio-box"><span>Folio</span><strong id="generatedFolio"></strong></div><button id="closeModalBtn" class="button primary" type="button">Crear otra solicitud</button></section></div></template>
+
+  <script src="js/catalogos.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
