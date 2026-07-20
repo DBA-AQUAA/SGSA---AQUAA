@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="150" viewBox="0 0 420 150" role="img" aria-label="AQUAA">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00a6e8"/>
+      <stop offset="1" stop-color="#0078d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="420" height="150" rx="24" fill="white"/>
+  <path d="M56 105c-22 0-40-16-40-36 0-25 34-55 40-60 6 5 40 35 40 60 0 20-18 36-40 36Z" fill="url(#g)"/>
+  <path d="M35 70c7 8 15 12 24 12 10 0 17-4 24-12" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/>
+  <text x="115" y="92" font-family="Segoe UI,Arial,sans-serif" font-size="64" font-weight="800" fill="#0078d4">AQUAA</text>
+</svg>
