@@ -22,8 +22,6 @@
   const productError = $("productError");
   const submitStatus = $("submitStatus");
   const submitBtn = $("submitBtn");
-  const attachment = $("attachment");
-
   init();
 
   function init() {
@@ -52,7 +50,6 @@
     });
     $("addProductBtn").addEventListener("click", addProduct);
     tbody.addEventListener("click", removeProduct);
-    attachment.addEventListener("change", validateAttachment);
     $("notes").addEventListener("input", () => {
       $("notesCount").textContent = $("notes").value.length;
     });
@@ -179,32 +176,6 @@
     empty.hidden = state.products.length > 0;
   }
 
-  function validateAttachment() {
-    clearFileMessage();
-
-    const file = attachment.files[0];
-    if (!file) return true;
-
-    const allowed = ["image/jpeg", "image/png", "image/webp"];
-
-    if (!allowed.includes(file.type)) {
-      setFileError("El archivo debe ser JPG, PNG o WEBP.");
-      attachment.value = "";
-      return false;
-    }
-
-    if (file.size > CONFIG.maxFileSizeMb * 1024 * 1024) {
-      setFileError(`La imagen supera el límite de ${CONFIG.maxFileSizeMb} MB.`);
-      attachment.value = "";
-      return false;
-    }
-
-    $("fileName").textContent =
-      `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-
-    return true;
-  }
-
   async function submitRequest(event) {
     event.preventDefault();
     hideMessages();
@@ -214,7 +185,6 @@
     if (!state.products.length) {
       return showProductError("Agregue al menos un material al carrito.");
     }
-    if (!validateAttachment()) return;
     if (!$("confirmation").checked) {
       return showStatus("Confirme que los datos capturados son correctos.", true);
     }
@@ -222,10 +192,6 @@
     setLoading(true);
 
     try {
-      const fileData = attachment.files[0]
-        ? await fileToPayload(attachment.files[0])
-        : null;
-
       const payload = {
         nombre: $("fullName").value.trim(),
         correo: $("email").value.trim(),
@@ -237,8 +203,7 @@
           material: item.productName,
           cantidad: item.quantity,
           unidad: item.unit
-        })),
-        adjunto: fileData
+        }))
       };
 
       const controller = new AbortController();
@@ -332,24 +297,6 @@
     document.getElementById("closeModalBtn").focus();
   }
 
-  function fileToPayload(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = () => resolve({
-        name: file.name,
-        mimeType: file.type,
-        size: file.size,
-        base64: String(reader.result).split(",")[1]
-      });
-
-      reader.onerror = () =>
-        reject(new Error("No se pudo leer la imagen adjunta."));
-
-      reader.readAsDataURL(file);
-    });
-  }
-
   function setLoading(active) {
     submitBtn.disabled = active;
     submitBtn.classList.toggle("is-loading", active);
@@ -381,16 +328,6 @@
     document.querySelectorAll("[data-error-for]").forEach((node) => {
       node.textContent = "";
     });
-  }
-
-  function setFileError(message) {
-    $("fileError").textContent = message;
-    $("fileName").textContent = "";
-  }
-
-  function clearFileMessage() {
-    $("fileError").textContent = "";
-    $("fileName").textContent = "";
   }
 
   function normalize(value) {
