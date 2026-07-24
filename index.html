@@ -10,6 +10,11 @@
   <title>SGSA | AQUAA</title>
   <link rel="icon" type="image/png" href="img/LOGO-AQUAA.png">
   <link rel="stylesheet" href="css/styles.css">
+  <script
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer>
+</script>
 </head>
 <body>
   <a class="skip-link" href="#solicitud">Ir al formulario</a>
@@ -171,6 +176,11 @@
         <div class="button-row">
           <button class="button button-ghost" type="reset">Limpiar formulario</button>
           <button id="submitBtn" class="button button-primary" type="submit">
+            <div class="cf-turnstile"
+                data-sitekey="TU_SITE_KEY"
+                data-theme="auto"
+                data-size="flexible">
+            </div>
             <span class="spinner" hidden></span><span class="submit-label">Enviar solicitud</span>
           </button>
         </div>
