@@ -2,10 +2,10 @@
   "use strict";
 
   const CONFIG = Object.freeze({
-    appsScriptUrl: "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec",
+  gatewayUrl: "https://sgsa-gateway.almacenoqm1.workers.dev/api/v1/solicitudes",
     requestTimeoutMs: 30000,
     maxSearchResults: 60
-  });
+});
 
   const state = { selectedProduct: null, products: [], isSubmitting: false };
   const elements = {};
