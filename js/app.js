@@ -201,13 +201,17 @@
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), CONFIG.requestTimeoutMs);
     try {
-      const response = await fetch(CONFIG.appsScriptUrl, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(buildPayload()),
-        signal: controller.signal,
-        redirect: "follow"
-      });
+      const payload = buildPayload();
+payload.captchaToken = captchaToken;
+
+const response = await fetch(CONFIG.gatewayUrl, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload),
+  signal: controller.signal
+});
       const result = await parseJsonResponse(response);
       if (!response.ok || !result.ok) throw new Error(result.message || result.mensaje || "El servidor rechazó la solicitud.");
       showSuccessModal(result.folio);
