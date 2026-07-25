@@ -190,6 +190,12 @@
       elements.confirmation.focus();
       return;
     }
+    
+    const captchaToken = getCaptchaToken();
+    if (!captchaToken) {
+      showStatus("Complete la verificación de seguridad antes de enviar la solicitud.", "error");
+  return;
+}
 
     setLoading(true);
     const controller = new AbortController();
