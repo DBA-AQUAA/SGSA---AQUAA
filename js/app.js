@@ -220,6 +220,7 @@ const response = await fetch(CONFIG.gatewayUrl, {
         ? "La solicitud tardó demasiado. Revise su conexión e intente nuevamente."
         : `No fue posible enviar la solicitud. ${error.message || "Intente nuevamente."}`;
       showStatus(message.trim(), "error");
+      resetCaptcha();
     } finally {
       window.clearTimeout(timeoutId);
       setLoading(false);
@@ -243,6 +244,23 @@ const response = await fetch(CONFIG.gatewayUrl, {
     };
   }
 
+  function getCaptchaToken() {
+  const tokenField = document.querySelector(
+    'input[name="cf-turnstile-response"]'
+  );
+
+  return tokenField ? cleanText(tokenField.value) : "";
+}
+
+function resetCaptcha() {
+  if (
+    window.turnstile &&
+    typeof window.turnstile.reset === "function"
+  ) {
+    window.turnstile.reset();
+  }
+}
+  
   async function parseJsonResponse(response) {
     const text = await response.text();
     try { return JSON.parse(text); }
@@ -283,6 +301,7 @@ const response = await fetch(CONFIG.gatewayUrl, {
       hideMessages();
       clearFieldErrors();
       renderTable();
+      resetCaptcha();
     }, 0);
   }
 
