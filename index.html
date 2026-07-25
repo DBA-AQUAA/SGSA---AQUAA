@@ -173,17 +173,28 @@
           <input id="confirmation" type="checkbox">
           <span>Confirmo que la información capturada es correcta.</span>
         </label>
-        <div class="button-row">
-          <button class="button button-ghost" type="reset">Limpiar formulario</button>
-          <button id="submitBtn" class="button button-primary" type="submit">
-            <div class="cf-turnstile"
-                data-sitekey="TU_SITE_KEY"
-                data-theme="auto"
-                data-size="flexible">
-            </div>
-            <span class="spinner" hidden></span><span class="submit-label">Enviar solicitud</span>
-          </button>
-        </div>
+       <div class="captcha-container">
+  <div
+    class="cf-turnstile"
+    data-sitekey="0x4AAAAAAD8-QiVywv8ecAhX"
+    data-theme="auto"
+    data-size="flexible"
+    data-action="crear-solicitud"
+    data-retry="auto"
+    data-refresh-expired="auto">
+  </div>
+</div>
+
+<div class="button-row">
+  <button class="button button-ghost" type="reset">
+    Limpiar formulario
+  </button>
+
+  <button id="submitBtn" class="button button-primary" type="submit">
+    <span class="spinner" hidden></span>
+    <span class="submit-label">Enviar solicitud</span>
+  </button>
+</div>
         <p id="submitStatus" class="form-status" role="status" hidden></p>
       </section>
     </form>
