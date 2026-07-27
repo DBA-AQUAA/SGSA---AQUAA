@@ -2,7 +2,7 @@
   "use strict";
 
   const CONFIG = Object.freeze({
-    appsScriptUrl: "https://script.google.com/macros/s/AKfycbzV21JNPxd3ojDf28YdEe67vVExuUho6jBRX7vS-CpiC1wrVCmsyvONTdlZWLt7X6Z_/exec",
+    appsScriptUrl: "appsScriptUrl: "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec",
     requestTimeoutMs: 30000,
     maxSearchResults: 60
   });
