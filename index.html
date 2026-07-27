@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="David Andrés Serrano Ortiz">
+  <meta name="description" content="Sistema de Gestión de Solicitudes de Almacén de AQUAA">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#087f8c">
+  <title>SGSA | AQUAA</title>
+  <link rel="icon" type="image/png" href="img/LOGO-AQUAA.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#solicitud">Ir al formulario</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <img class="institutional-logo" src="img/logo-institucional-aquaa.png" alt="Logotipos institucionales de AQUAA">
+      <div class="header-copy">
+        <p class="brand-label">AQUAA</p>
+        <h1>Sistema de Gestión de Solicitudes de Almacén</h1>
+        <p>Solicitud de materiales e insumos</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-shell" id="solicitud">
+    <section class="intro-panel" aria-labelledby="intro-title">
+      <div>
+        <p class="eyebrow">Nueva solicitud</p>
+        <h2 id="intro-title">Registro de materiales e insumos</h2>
+        <p>Complete los datos del solicitante y agregue uno o más materiales. Los campos con <strong>*</strong> son obligatorios.</p>
+      </div>
+      <span class="status-badge"><span aria-hidden="true"></span>Servicio activo</span>
+    </section>
+
+    <ol class="steps" aria-label="Etapas de la solicitud">
+      <li><span>1</span>Datos del solicitante</li>
+      <li><span>2</span>Materiales</li>
+      <li><span>3</span>Información adicional</li>
+    </ol>
+
+    <form id="requestForm" novalidate>
+      <section class="form-card" aria-labelledby="step1-title">
+        <header class="section-header">
+          <span class="step-number">1</span>
+          <div>
+            <h2 id="step1-title">Datos del solicitante</h2>
+            <p>Información necesaria para identificar y dar seguimiento a la solicitud.</p>
+          </div>
+        </header>
+
+        <div class="form-grid two-columns">
+          <label class="field">
+            <span>Nombre completo *</span>
+            <input id="fullName" name="fullName" type="text" autocomplete="name" maxlength="120" required>
+            <small class="field-error" data-error-for="fullName"></small>
+          </label>
+
+          <label class="field">
+            <span>Correo electrónico *</span>
+            <input id="email" name="email" type="email" autocomplete="email" maxlength="160" required>
+            <small class="field-error" data-error-for="email"></small>
+          </label>
+
+          <label class="field">
+            <span>Área *</span>
+            <select id="area" name="area" required>
+              <option value="">Seleccione un área...</option>
+              <option>Administración</option><option>ASEC</option><option>Agua y Alcantarillado</option>
+              <option>Contabilidad</option><option>Cultura del Agua</option><option>Facturación y Cobranza</option>
+              <option>Fuentes de Abastecimiento</option><option>Jurídico</option><option>Jurídico Comercial</option>
+              <option>Jurídico Contencioso</option><option>Planeación y Proyectos</option><option>Recursos Humanos</option>
+              <option>Saneamiento</option><option>Tesorería</option>
+            </select>
+            <small class="field-error" data-error-for="area"></small>
+          </label>
+
+          <label class="field">
+            <span>Sucursal *</span>
+            <select id="branch" name="branch" required>
+              <option value="">Seleccione una sucursal...</option>
+              <option>Bodega 19</option><option>Bodega 56</option><option>Bodega 70</option>
+              <option>El Refugio</option><option>La Pradera</option><option>Zakia</option><option>Zibatá</option>
+            </select>
+            <small class="field-error" data-error-for="branch"></small>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-card" aria-labelledby="step2-title">
+        <header class="section-header">
+          <span class="step-number">2</span>
+          <div>
+            <h2 id="step2-title">Materiales solicitados</h2>
+            <p>Seleccione una categoría, busque el material y agréguelo a la solicitud.</p>
+          </div>
+        </header>
+
+        <div class="material-grid">
+          <label class="field">
+            <span>Categoría *</span>
+            <select id="category"><option value="">Seleccione...</option></select>
+          </label>
+
+          <label class="field product-search-field">
+            <span>Material *</span>
+            <input id="productSearch" type="search" autocomplete="off" placeholder="Seleccione primero una categoría" aria-expanded="false" disabled>
+            <div id="productResults" class="results-list" role="listbox" hidden></div>
+          </label>
+
+          <label class="field compact-field">
+            <span>Cantidad *</span>
+            <input id="quantity" type="number" min="1" inputmode="decimal" placeholder="Ej. 2">
+          </label>
+
+          <label class="field compact-field">
+            <span>Unidad *</span>
+            <input id="unit" type="text" maxlength="40" placeholder="Ej. pieza, caja o litro" autocomplete="off">
+          </label>
+
+          <button id="addProductBtn" class="button button-secondary add-material" type="button">Agregar material</button>
+        </div>
+
+        <p id="productError" class="inline-message error" hidden></p>
+
+        <div id="emptyProducts" class="empty-state">
+          <strong>La solicitud no contiene materiales</strong>
+          <span>Agregue al menos un material para continuar.</span>
+        </div>
+
+        <div id="productsTableWrapper" class="table-wrapper" hidden>
+          <table>
+            <caption>Materiales agregados a la solicitud</caption>
+            <thead><tr><th>Material</th><th>Categoría</th><th>Cantidad</th><th>Unidad</th><th>Acción</th></tr></thead>
+            <tbody id="productsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="form-card" aria-labelledby="step3-title">
+        <header class="section-header">
+          <span class="step-number">3</span>
+          <div>
+            <h2 id="step3-title">Solicitudes específicas</h2>
+            <p>Agregue especificaciones cuando sean necesarias.</p>
+          </div>
+        </header>
+
+        <aside class="info-box">
+          <span class="info-icon" aria-hidden="true">i</span>
+          <div>
+            <strong>Información importante</strong>
+            <p>Si el material o insumo que se requiere no se encuentra disponible en el catálogo de las categorías mostradas, puedes solicitarlo en este apartado. Describe con el mayor detalle posible en el apartado de observaciones el insumo, material o producto que necesites.</p>
+          </div>
+        </aside>
+
+        <label class="field">
+          <span>Observaciones (opcional)</span>
+          <textarea id="notes" maxlength="800" rows="4" placeholder="Escriba aquí especificaciones adicionales, color, medida, marca sugerida u otra información relevante."></textarea>
+          <small class="character-count"><span id="notesCount">0</span>/800 caracteres</small>
+        </label>
+      </section>
+
+      <section class="submit-panel">
+        <label class="confirmation-row">
+          <input id="confirmation" type="checkbox">
+          <span>Confirmo que la información capturada es correcta.</span>
+        </label>
+        <div class="button-row">
+          <button class="button button-ghost" type="reset">Limpiar formulario</button>
+          <button id="submitBtn" class="button button-primary" type="submit">
+            <span class="spinner" hidden></span><span class="submit-label">Enviar solicitud</span>
+          </button>
+        </div>
+        <p id="submitStatus" class="form-status" role="status" hidden></p>
+      </section>
+    </form>
+  </main>
+
+  <footer class="site-footer">Sistema de Gestión de Solicitudes de Almacén <span>•</span> AQUAA <span>•</span> v4.0</footer>
+
+  <template id="successTemplate">
+    <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+      <div class="modal-card">
+        <div class="success-mark" aria-hidden="true">✓</div>
+        <p class="eyebrow">Solicitud registrada</p>
+        <h2 id="successTitle">¡Solicitud enviada!</h2>
+        <p>Su solicitud fue registrada correctamente. Si es aprobada, recibirá un vale de salida en su correo electrónico en un lapso aproximado de 24 horas.</p>
+        <div class="folio-box"><span>Folio asignado</span><strong id="generatedFolio"></strong></div>
+        <button id="closeModalBtn" class="button button-primary" type="button">Aceptar</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="js/catalogos.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
