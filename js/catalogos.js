@@ -245,7 +245,7 @@ window.SGSA_CATALOG = {
     { id: "EP021", name: "BOTA DE SEGURIDAD #31", unit: "PAR" },
     { id: "EP022", name: "LINEA DE VIDA", unit: "PIEZA" },
     { id: "EP023", name: "LENTES DE SEGURIDAD NEGROS", unit: "PIEZA" },
-    { id: "EP024", name: "LENTES DE SEGURIDAD RASPARENTES", unit: "PIEZA" },
+    { id: "EP024", name: "LENTES DE SEGURIDAD TRASPARENTES", unit: "PIEZA" },
     { id: "EP025", name: "GOGLES DE SEGURIDAD", unit: "PIEZA" },
     { id: "EP026", name: "CASCO DE SEGURIDAD", unit: "PIEZA" },
     { id: "EP027", name: "GUANTES ANTICORTES G", unit: "PAR" },
