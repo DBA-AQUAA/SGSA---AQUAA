@@ -172,7 +172,7 @@ window.SGSA_CATALOG = {
     { id: "FE032", name: "STILSON DE 12\"", unit: "PIEZA" },
     { id: "FE033", name: "STILSON DE 14\"", unit: "PIEZA" },
     { id: "FE034", name: "PERICA DE 10\"", unit: "PIEZA" },
-    { id: "FE035", name: "PINSAS DE PRECION DE 10\"", unit: "PIEZA" },
+    { id: "FE035", name: "PINZAS DE PRESIÓN DE 10\"", unit: "PIEZA" },
     { id: "FE036", name: "CINCEL", unit: "PIEZA" },
     { id: "FE037", name: "MARRO DE 4\"", unit: "PIEZA" },
     { id: "FE038", name: "MARRO DE 3\"", unit: "PIEZA" },
