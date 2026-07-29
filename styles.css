@@ -50,7 +50,6 @@ button { cursor: pointer; }
   background: rgba(255, 255, 255, .94);
   border-bottom: 1px solid rgba(8, 127, 140, .14);
   box-shadow: 0 4px 16px rgba(22, 63, 72, .07);
-  position: fixed;
 }
 .header-inner {
   width: min(1120px, calc(100% - 32px));
