@@ -19,6 +19,21 @@
 </head>
 <body>
 
+  <!-- Ventana emergente de verificación al cargar la página -->
+<div id="captchaOverlay" class="captcha-overlay">
+  <div class="captcha-card">
+    <h2>Verificación de seguridad</h2>
+    <p>Por favor, completa la validación para continuar al formulario de solicitudes.</p>
+
+    <!-- Widget de Cloudflare Turnstile -->
+    <div class="cf-turnstile" 
+         data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
+         data-callback="alCompletarTurnstile"
+         data-expired-callback="alExpirarTurnstile">
+    </div>
+  </div>
+</div>
+
   <a class="skip-link" href="#solicitud">Ir al formulario</a>
 
   <header class="site-header">
@@ -258,14 +273,16 @@
 
       <section class="submit-panel" aria-label="Confirmación y envío">
         
-        <!-- 2. Widget de Cloudflare Turnstile -->
+        <!-- 2. Widget de Cloudflare Turnstile 
         <div class="cf-turnstile" 
              data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
              data-callback="alCompletarTurnstile"
              data-expired-callback="alExpirarTurnstile"
              style="margin-bottom: 20px;">
         </div>
-        
+        -->
+
+
         <label class="confirmation-row" for="confirmation">
           <input id="confirmation" name="confirmation" type="checkbox">
           <span>Confirmo que los datos capturados son correctos.</span>
@@ -315,24 +332,24 @@
 
   <!-- 4. Lógica para el CAPTCHA -->
   <script>
-    function alCompletarTurnstile(token) {
-      const submitBtn = document.getElementById('submitBtn');
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
-        submitBtn.style.cursor = 'pointer';
-      }
+  // Se ejecuta automáticamente al validar el CAPTCHA
+  function alCompletarTurnstile(token) {
+    const overlay = document.getElementById('captchaOverlay');
+    if (overlay) {
+      // Oculta la ventana emergente para permitir el llenado
+      overlay.style.display = 'none';
     }
+  }
 
-    function alExpirarTurnstile() {
-      const submitBtn = document.getElementById('submitBtn');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.6';
-        submitBtn.style.cursor = 'not-allowed';
-      }
+  // En caso de que la verificación expire por inactividad
+  function alExpirarTurnstile() {
+    const overlay = document.getElementById('captchaOverlay');
+    if (overlay) {
+      // Vuelve a mostrar la ventana emergente para solicitar verificación
+      overlay.style.display = 'flex';
     }
-  </script>
+  }
+</script>
 
 </body>
 </html>
