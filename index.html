@@ -19,7 +19,23 @@
 </head>
 <body>
 
+  <?php
+    session_start();
+
+    // Obtener la IP real del cliente
+    $ip_usuario = $_SERVER['REMOTE_ADDR'];
+
+    // Si está detrás de un proxy/Cloudflare, se puede obtener con:
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        $ip_usuario = $_SERVER['HTTP_CF_CONNECTING_IP'];
+    }
+
+    // Comprobar si la IP actual ya fue verificada en esta sesión
+    $ya_verificado = isset($_SESSION['ip_verificada']) && $_SESSION['ip_verificada'] === $ip_usuario;
+?>
+
   <!-- Ventana emergente de verificación al cargar la página -->
+<?php if (!$ya_verificado): ?>
 <div id="captchaOverlay" class="captcha-overlay">
   <div class="captcha-card">
     <h2>Verificación de seguridad</h2>
@@ -33,17 +49,18 @@
          style="margin: 20px 0;">
     </div>
 
-    <!-- Botón de continuación (inicia bloqueado) -->
+    <!-- Botón de continuación (inicia bloqueado)
     <button id="btnContinuar" 
             class="button button-primary" 
             disabled 
             onclick="ingresarAlFormulario()" 
-            style="width: 100%; opacity: 0.5; cursor: not-allowed;">
+            style="width: 100%; opacity: 0.5; cursor: not-allowed;"> -->
+    <button id="btnContinuar" disabled onclick="ingresarAlFormulario()">
       Esperando verificación...
     </button>
-
   </div>
 </div>
+<?php endif; ?>
 
   <a class="skip-link" href="#solicitud">Ir al formulario</a>
 
@@ -342,6 +359,15 @@
 
   <!-- 4. Lógica para el CAPTCHA -->
  <script>
+  //
+  function ingresarAlFormulario() {
+  // Registrar la IP en la sesión PHP vía fetch
+  fetch('guardar_verificacion.php', { method: 'POST' })
+    .then(() => {
+      const overlay = document.getElementById('captchaOverlay');
+      if (overlay) overlay.style.display = 'none';
+    });
+}
   // 1. Cuando Cloudflare verifica al usuario, activa el botón
   function alCompletarTurnstile(token) {
     const btn = document.getElementById('btnContinuar');
