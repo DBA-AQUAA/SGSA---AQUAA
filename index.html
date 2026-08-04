@@ -19,29 +19,14 @@
 </head>
 <body>
 
-  <?php
-    session_start();
-
-    // Obtener la IP real del cliente
-    $ip_usuario = $_SERVER['REMOTE_ADDR'];
-
-    // Si está detrás de un proxy/Cloudflare, se puede obtener con:
-    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
-        $ip_usuario = $_SERVER['HTTP_CF_CONNECTING_IP'];
-    }
-
-    // Comprobar si la IP actual ya fue verificada en esta sesión
-    $ya_verificado = isset($_SESSION['ip_verificada']) && $_SESSION['ip_verificada'] === $ip_usuario;
-?>
-
-  <!-- Ventana emergente de verificación al cargar la página -->
+  <!-- Ventana emergente de verificación al cargar la página 
 <?php if (!$ya_verificado): ?>
 <div id="captchaOverlay" class="captcha-overlay">
   <div class="captcha-card">
     <h2>Verificación de seguridad</h2>
     <p>Por favor, completa la validación para continuar al formulario de solicitudes.</p>
 
-    <!-- Widget de Cloudflare Turnstile -->
+     //Widget de Cloudflare Turnstile 
     <div class="cf-turnstile" 
          data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
          data-callback="alCompletarTurnstile"
@@ -49,18 +34,18 @@
          style="margin: 20px 0;">
     </div>
 
-    <!-- Botón de continuación (inicia bloqueado)
+    // Botón de continuación (inicia bloqueado)
     <button id="btnContinuar" 
             class="button button-primary" 
             disabled 
             onclick="ingresarAlFormulario()" 
-            style="width: 100%; opacity: 0.5; cursor: not-allowed;"> -->
+            style="width: 100%; opacity: 0.5; cursor: not-allowed;"> 
     <button id="btnContinuar" disabled onclick="ingresarAlFormulario()">
       Esperando verificación...
     </button>
+  -->
   </div>
 </div>
-<?php endif; ?>
 
   <a class="skip-link" href="#solicitud">Ir al formulario</a>
 
@@ -300,16 +285,6 @@
       </section>
 
       <section class="submit-panel" aria-label="Confirmación y envío">
-        
-        <!-- 2. Widget de Cloudflare Turnstile 
-        <div class="cf-turnstile" 
-             data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
-             data-callback="alCompletarTurnstile"
-             data-expired-callback="alExpirarTurnstile"
-             style="margin-bottom: 20px;">
-        </div>
-        -->
-
 
         <label class="confirmation-row" for="confirmation">
           <input id="confirmation" name="confirmation" type="checkbox">
@@ -357,7 +332,7 @@
   <script src="js/catalogos.js"></script>
   <script src="js/app.js"></script>
 
-  <!-- 4. Lógica para el CAPTCHA -->
+  <!-- 4. Lógica para el CAPTCHA 
  <script>
   //
   function ingresarAlFormulario() {
@@ -394,6 +369,72 @@
     if (overlay) {
       overlay.style.display = 'none'; // Cierra la ventana emergente
     }
+  }
+</script>   -->
+
+<script>
+  // Variable global para guardar el token de verificación temporalmente
+  let turnstileToken = '';
+
+  // 1. Al cargar la página, comprobar si ya se verificó localmente
+  document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('captcha_verificado') === 'true') {
+      const overlay = document.getElementById('captchaOverlay');
+      if (overlay) overlay.style.display = 'none';
+    }
+  });
+
+  // 2. Cloudflare entrega el token cuando el usuario completa la prueba
+  function alCompletarTurnstile(token) {
+    turnstileToken = token; // Guardamos el token recibido
+    
+    const btn = document.getElementById('btnContinuar');
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.innerText = 'Continuar al formulario';
+    }
+  }
+
+  // 3. Al hacer clic en "Continuar", validamos con Apps Script
+  function ingresarAlFormulario() {
+    const btn = document.getElementById('btnContinuar');
+    btn.disabled = true;
+    btn.innerText = 'Verificando con el servidor...';
+
+    // Obtener IP pública del usuario
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => {
+        const userIp = data.ip;
+
+        // Llamada remota a la función de Code.gs
+        google.script.run
+          .withSuccessHandler((resultado) => {
+            if (resultado.success) {
+              // Guardar la persistencia local
+              localStorage.setItem('captcha_verificado', 'true');
+              
+              // Cerrar la ventana emergente
+              document.getElementById('captchaOverlay').style.display = 'none';
+            } else {
+              alert('La verificación no fue exitosa. Inténtalo de nuevo.');
+              btn.disabled = false;
+              btn.innerText = 'Reintentar';
+            }
+          })
+          .withFailureHandler((err) => {
+            console.error('Error del servidor:', err);
+            alert('Error de conexión con el servidor.');
+            btn.disabled = false;
+            btn.innerText = 'Reintentar';
+          })
+          .validarTokenTurnstile(turnstileToken, userIp);
+      })
+      .catch(err => {
+        console.error('Error al obtener la IP:', err);
+      });
   }
 </script>
 
