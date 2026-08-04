@@ -30,7 +30,18 @@
          data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
          data-callback="alCompletarTurnstile"
          data-expired-callback="alExpirarTurnstile">
+         style="margin: 20px 0;">
     </div>
+
+    <!-- Botón de continuación (inicia bloqueado) -->
+    <button id="btnContinuar" 
+            class="button button-primary" 
+            disabled 
+            onclick="ingresarAlFormulario()" 
+            style="width: 100%; opacity: 0.5; cursor: not-allowed;">
+      Esperando verificación...
+    </button>
+
   </div>
 </div>
 
@@ -331,22 +342,32 @@
   <script src="js/app.js"></script>
 
   <!-- 4. Lógica para el CAPTCHA -->
-  <script>
-  // Se ejecuta automáticamente al validar el CAPTCHA
+ <script>
+  // 1. Cuando Cloudflare verifica al usuario, activa el botón
   function alCompletarTurnstile(token) {
-    const overlay = document.getElementById('captchaOverlay');
-    if (overlay) {
-      // Oculta la ventana emergente para permitir el llenado
-      overlay.style.display = 'none';
+    const btn = document.getElementById('btnContinuar');
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.innerText = 'Continuar al formulario';
     }
   }
-
-  // En caso de que la verificación expire por inactividad
+  // 2. Si la verificación expira por inactividad, bloquea el botón de nuevo
   function alExpirarTurnstile() {
+    const btn = document.getElementById('btnContinuar');
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+      btn.innerText = 'Esperando verificación...';
+    }
+  }
+  // 3. Acción al presionar el botón una vez activado
+  function ingresarAlFormulario() {
     const overlay = document.getElementById('captchaOverlay');
     if (overlay) {
-      // Vuelve a mostrar la ventana emergente para solicitar verificación
-      overlay.style.display = 'flex';
+      overlay.style.display = 'none'; // Cierra la ventana emergente
     }
   }
 </script>
