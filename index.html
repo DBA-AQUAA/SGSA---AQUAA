@@ -260,7 +260,7 @@
         
         <!-- 2. Widget de Cloudflare Turnstile -->
         <div class="cf-turnstile" 
-             data-sitekey="TU_SITE_KEY_AQUI" 
+             data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
              data-callback="alCompletarTurnstile"
              data-expired-callback="alExpirarTurnstile"
              style="margin-bottom: 20px;">
@@ -274,7 +274,8 @@
         <div class="button-row">
           <button class="button button-ghost" type="reset">Limpiar formulario</button>
 
-          <button id="submitBtn" class="button button-primary" type="submit">
+          <!-- 3. Botón con estado deshabilitado por defecto -->
+          <button id="submitBtn" class="button button-primary" type="submit" disabled style="opacity: 0.6; cursor: not-allowed;">
             <span class="spinner" aria-hidden="true" hidden></span>
             <span class="submit-label">Enviar solicitud</span>
           </button>
