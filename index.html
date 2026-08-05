@@ -364,10 +364,8 @@
 </script>   -->
 
 <script>
-  // Variable global para guardar el token de verificación temporalmente
   let turnstileToken = '';
 
-  // 1. Al cargar la página, comprobar si ya se verificó localmente
   document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('captcha_verificado') === 'true') {
       const overlay = document.getElementById('captchaOverlay');
@@ -375,10 +373,8 @@
     }
   });
 
-  // 2. Cloudflare entrega el token cuando el usuario completa la prueba
   function alCompletarTurnstile(token) {
-    turnstileToken = token; // Guardamos el token recibido
-    
+    turnstileToken = token;
     const btn = document.getElementById('btnContinuar');
     if (btn) {
       btn.disabled = false;
@@ -388,44 +384,48 @@
     }
   }
 
-  // 3. Al hacer clic en "Continuar", validamos con Apps Script
-  function ingresarAlFormulario() {
+  // Obtener IP sin detener el flujo si el navegador o un AdBlocker la bloquea
+  async function obtenerIP() {
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      return data.ip;
+    } catch (err) {
+      console.warn('No se pudo consultar la IP pública:', err);
+      return 'IP_No_Detectada';
+    }
+  }
+
+  async function ingresarAlFormulario() {
     const btn = document.getElementById('btnContinuar');
     btn.disabled = true;
-    btn.innerText = 'Verificando con el servidor...';
+    btn.innerText = 'Verificando con servidor...';
 
-    // Obtener IP pública del usuario
-    fetch('https://api.ipify.org?format=json')
-      .then(res => res.json())
-      .then(data => {
-        const userIp = data.ip;
+    // 1. Obtener IP de forma segura
+    const userIp = await obtenerIP();
 
-        // Llamada remota a la función de Verificacion.gs
-        google.script.run
-          .withSuccessHandler((resultado) => {
-            if (resultado.success) {
-              // Guardar la persistencia local
-              localStorage.setItem('captcha_verificado', 'true');
-              
-              // Cerrar la ventana emergente
-              document.getElementById('captchaOverlay').style.display = 'none';
-            } else {
-              alert('La verificación no fue exitosa. Inténtalo de nuevo.');
-              btn.disabled = false;
-              btn.innerText = 'Reintentar';
-            }
-          })
-          .withFailureHandler((err) => {
-            console.error('Error del servidor:', err);
-            alert('Error de conexión con el servidor.');
-            btn.disabled = false;
-            btn.innerText = 'Reintentar';
-          })
-          .validarTokenTurnstile(turnstileToken, userIp);
+    // 2. Enviar a Google Apps Script
+    google.script.run
+      .withSuccessHandler((resultado) => {
+        console.log("Respuesta del servidor:", resultado);
+
+        if (resultado && resultado.success) {
+          // Guardar verificación y cerrar la ventana flotante
+          localStorage.setItem('captcha_verificado', 'true');
+          document.getElementById('captchaOverlay').style.display = 'none';
+        } else {
+          alert('Validación fallida: ' + (resultado.message || 'Token de captcha inválido.'));
+          btn.disabled = false;
+          btn.innerText = 'Reintentar';
+        }
       })
-      .catch(err => {
-        console.error('Error al obtener la IP:', err);
-      });
+      .withFailureHandler((err) => {
+        console.error('Error de servidor GAS:', err);
+        alert('Error en Apps Script: ' + err.message);
+        btn.disabled = false;
+        btn.innerText = 'Reintentar';
+      })
+      .validarTokenTurnstile(turnstileToken, userIp);
   }
 </script>
 
