@@ -537,46 +537,53 @@ td small { color: var(--muted); }
 }
 
  /* CSS PARA EMERGENTE VERIFICACION */
-/* Pantalla completa traslúcida que bloquea el fondo */
-.captcha-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px); /* Aplica un ligero desenfoque al fondo */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999; /* Asegura que quede por encima de todo el sitio */
-}
+  .captcha-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+  }
 
-/* Tarjeta central del modal */
-.captcha-card {
-  background-color: #ffffff;
-  padding: 30px;
-  border-radius: 12px;
-  text-align: center;
-  max-width: 420px;
-  width: 90%;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-  font-family: inherit;
-}
+  /* Ocultamiento forzado mediante !important */
+  .captcha-overlay.oculto {
+    display: none !important;
+  }
 
-.captcha-card h2 {
-  margin-top: 0;
-  color: #087f8c;
-  font-size: 1.4rem;
-}
+  .captcha-card {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    font-family: inherit;
+  }
 
-.captcha-card p {
-  color: #555555;
-  font-size: 0.95rem;
-  margin-bottom: 20px;
-}
+  .captcha-card h2 {
+    margin-top: 0;
+    color: #087f8c;
+    font-size: 1.4rem;
+  }
 
-/* Regla para ocultar el modal desde JavaScript */
-.captcha-overlay.oculto {
-  display: none !important;
-}
+  .captcha-card p {
+    color: #555555;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+
+  #btnContinuar {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }

@@ -19,12 +19,13 @@
 </head>
 <body>
 
+<!-- MODAL EMERGENTE -->
 <div id="captchaOverlay" class="captcha-overlay">
   <div class="captcha-card">
     <h2>Verificación de seguridad</h2>
     <p>Por favor, completa la validación para continuar.</p>
 
-    <!-- Widget -->
+    <!-- Widget Cloudflare Turnstile -->
     <div class="cf-turnstile" 
          data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
          data-callback="alCompletarTurnstile"
@@ -32,7 +33,7 @@
     </div>
 
     <!-- Botón -->
-    <button id="btnContinuar" disabled onclick="ingresarAlFormulario()" style="opacity:0.5; cursor:not-allowed;">
+    <button id="btnContinuar" disabled onclick="ingresarAlFormulario()" style="opacity:0.5; cursor:not-allowed; background-color:#cccccc; color:#666666;">
       Esperando verificación...
     </button>
   </div>
@@ -323,187 +324,105 @@
   <script src="js/catalogos.js"></script>
   <script src="js/app.js"></script>
 
-  <!-- 4. Lógica para el CAPTCHA 
- <script>
-  //
-  function ingresarAlFormulario() {
-  // Registrar la IP en la sesión PHP vía fetch
-  fetch('guardar_verificacion.php', { method: 'POST' })
-    .then(() => {
-      const overlay = document.getElementById('captchaOverlay');
-      if (overlay) overlay.style.display = 'none';
+  <!-- LÓGICA JAVASCRIPT -->
+  <script>
+    // Coloca la URL de tu Web App desplegada (terminada en /exec)
+    const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec";
+
+    let turnstileToken = '';
+
+    // Validar si ya fue verificado previamente
+    document.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('captcha_verificado') === 'true') {
+        cerrarModal();
+      }
     });
-}
-  // 1. Cuando Cloudflare verifica al usuario, activa el botón
-  function alCompletarTurnstile(token) {
-    const btn = document.getElementById('btnContinuar');
-    if (btn) {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-      btn.innerText = 'Continuar al formulario';
-    }
-  }
-  // 2. Si la verificación expira por inactividad, bloquea el botón de nuevo
-  function alExpirarTurnstile() {
-    const btn = document.getElementById('btnContinuar');
-    if (btn) {
-      btn.disabled = true;
-      btn.style.opacity = '0.5';
-      btn.style.cursor = 'not-allowed';
-      btn.innerText = 'Esperando verificación...';
-    }
-  }
-  // 3. Acción al presionar el botón una vez activado
-  function ingresarAlFormulario() {
-    const overlay = document.getElementById('captchaOverlay');
-    if (overlay) {
-      overlay.style.display = 'none'; // Cierra la ventana emergente
-    }
-  }
-</script>   -->
 
-<!--
-<script>
-  let turnstileToken = '';
-
-  document.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('captcha_verificado') === 'true') {
+    function cerrarModal() {
       const overlay = document.getElementById('captchaOverlay');
-      if (overlay) overlay.style.display = 'none';
+      if (overlay) {
+        overlay.classList.add('oculto');
+      }
     }
-  });
 
-  function alCompletarTurnstile(token) {
-    turnstileToken = token;
-    const btn = document.getElementById('btnContinuar');
-    if (btn) {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-      btn.innerText = 'Continuar al formulario';
-    }
-  }
+    // Asignaciones explícitas al ámbito global (window)
+    window.alCompletarTurnstile = function(token) {
+      turnstileToken = token;
+      const btn = document.getElementById('btnContinuar');
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.style.backgroundColor = '#087f8c';
+        btn.style.color = '#ffffff';
+        btn.innerText = 'Continuar al formulario';
+      }
+    };
 
-  // Obtener IP sin detener el flujo si el navegador o un AdBlocker la bloquea
-  async function obtenerIP() {
-    try {
-      const res = await fetch('https://api.ipify.org?format=json');
-      const data = await res.json();
-      return data.ip;
-    } catch (err) {
-      console.warn('No se pudo consultar la IP pública:', err);
-      return 'IP_No_Detectada';
-    }
-  }
+    window.alExpirarTurnstile = function() {
+      turnstileToken = '';
+      const btn = document.getElementById('btnContinuar');
+      if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        btn.style.backgroundColor = '#cccccc';
+        btn.style.color = '#666666';
+        btn.innerText = 'Esperando verificación...';
+      }
+    };
 
-  function ingresarAlFormulario() {
-  const btn = document.getElementById('btnContinuar');
+    async function ingresarAlFormulario() {
+      const btn = document.getElementById('btnContinuar');
+      const token = turnstileToken || (typeof turnstile !== 'undefined' ? turnstile.getResponse() : '');
 
-  // Validar que el token realmente exista antes de llamar al servidor
-  if (!turnstileToken) {
-    alert('Por favor, completa la verificación de Cloudflare antes de continuar.');
-    return;
-  }
+      if (!token) {
+        alert('Por favor, completa el recuadro de verificación.');
+        return;
+      }
 
-  btn.disabled = true;
-  btn.innerText = 'Verificando con servidor...';
+      btn.disabled = true;
+      btn.innerText = 'Verificando con servidor...';
 
-  obtenerIP().then(userIp => {
-    google.script.run
-      .withSuccessHandler((resultado) => {
+      // Obtener IP (Timeout de 2.5s)
+      let userIp = 'IP_No_Detectada';
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+        const data = await res.json();
+        userIp = data.ip;
+      } catch (e) {
+        console.warn('Consulta de IP omitida.');
+      }
+
+      // Petición a Apps Script con 'text/plain' para evitar bloqueos CORS
+      try {
+        const respuesta = await fetch(URL_WEB_APP, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify({ token: token, userIp: userIp })
+        });
+
+        const resultado = await respuesta.json();
+
         if (resultado && resultado.success) {
           localStorage.setItem('captcha_verificado', 'true');
-          document.getElementById('captchaOverlay').style.display = 'none';
+          cerrarModal();
         } else {
-          alert('Validación fallida: ' + (resultado.message || 'Token inválido.'));
+          alert('Error de verificación: ' + (resultado ? resultado.message : 'Respuesta nula'));
           btn.disabled = false;
           btn.innerText = 'Reintentar';
         }
-      })
-      .withFailureHandler((err) => {
-        alert('Error en el servidor de Google Apps Script: ' + err.message);
-        btn.disabled = false;
-        btn.innerText = 'Reintentar';
-      })
-      .validarTokenTurnstile(turnstileToken, userIp);
-  });
-} 
-  
-</script>
--->
-<script>
-  // Reemplaza esta URL con la URL completa de tu Web App de Apps Script (terminada en /exec)
-  const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec";
-
-  document.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('captcha_verificado') === 'true') {
-      cerrarModal();
-    }
-  });
-
-  function cerrarModal() {
-  const overlay = document.getElementById('captchaOverlay');
-  if (overlay) {
-    overlay.classList.add('oculto');
-  }
-}
-
-  function obtenerTokenDirecto() {
-    if (typeof turnstile !== 'undefined' && turnstile.getResponse) {
-      const res = turnstile.getResponse();
-      if (res) return res;
-    }
-    const inputOculto = document.querySelector('[name="cf-turnstile-response"]');
-    return inputOculto ? inputOculto.value : '';
-  }
-
-  async function ingresarAlFormulario() {
-    const btn = document.getElementById('btnContinuar');
-    const token = obtenerTokenDirecto();
-
-    if (!token) {
-      alert('Por favor, completa el recuadro del CAPTCHA.');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = 'Verificando con servidor...';
-
-    // 1. Obtener la IP
-    let userIp = 'IP_No_Detectada';
-    try {
-      const res = await fetch('https://api.ipify.org?format=json');
-      const data = await res.json();
-      userIp = data.ip;
-    } catch (e) {
-      console.warn('No se pudo obtener la IP pública');
-    }
-
-    // 2. Enviar datos a Google Apps Script desde GitHub Pages mediante fetch
-    try {
-      const respuesta = await fetch(URL_WEB_APP, {
-        method: 'POST',
-        body: JSON.stringify({ token: token, userIp: userIp })
-      });
-
-      const resultado = await respuesta.json();
-
-      if (resultado && resultado.success) {
-        localStorage.setItem('captcha_verificado', 'true');
-        cerrarModal();
-      } else {
-        alert('Validación fallida: ' + (resultado ? resultado.message : 'Error desconocido'));
+      } catch (error) {
+        alert('Error de conexión: ' + error.message);
         btn.disabled = false;
         btn.innerText = 'Reintentar';
       }
-    } catch (error) {
-      alert('Error de conexión con Google Apps Script: ' + error.message);
-      btn.disabled = false;
-      btn.innerText = 'Reintentar';
     }
-  }
-</script>
+  </script>
 
 </body>
 </html>
