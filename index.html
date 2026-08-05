@@ -396,37 +396,39 @@
     }
   }
 
-  async function ingresarAlFormulario() {
-    const btn = document.getElementById('btnContinuar');
-    btn.disabled = true;
-    btn.innerText = 'Verificando con servidor...';
+  function ingresarAlFormulario() {
+  const btn = document.getElementById('btnContinuar');
 
-    // 1. Obtener IP de forma segura
-    const userIp = await obtenerIP();
+  // Validar que el token realmente exista antes de llamar al servidor
+  if (!turnstileToken) {
+    alert('Por favor, completa la verificación de Cloudflare antes de continuar.');
+    return;
+  }
 
-    // 2. Enviar a Google Apps Script
+  btn.disabled = true;
+  btn.innerText = 'Verificando con servidor...';
+
+  obtenerIP().then(userIp => {
     google.script.run
       .withSuccessHandler((resultado) => {
-        console.log("Respuesta del servidor:", resultado);
-
         if (resultado && resultado.success) {
-          // Guardar verificación y cerrar la ventana flotante
           localStorage.setItem('captcha_verificado', 'true');
           document.getElementById('captchaOverlay').style.display = 'none';
         } else {
-          alert('Validación fallida: ' + (resultado.message || 'Token de captcha inválido.'));
+          alert('Validación fallida: ' + (resultado.message || 'Token inválido.'));
           btn.disabled = false;
           btn.innerText = 'Reintentar';
         }
       })
       .withFailureHandler((err) => {
-        console.error('Error de servidor GAS:', err);
-        alert('Error en Apps Script: ' + err.message);
+        alert('Error en el servidor de Google Apps Script: ' + err.message);
         btn.disabled = false;
         btn.innerText = 'Reintentar';
       })
       .validarTokenTurnstile(turnstileToken, userIp);
-  }
+  });
+} 
+  
 </script>
 
 </body>
