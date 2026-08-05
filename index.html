@@ -32,10 +32,8 @@
          data-expired-callback="alExpirarTurnstile">
     </div>
 
-    <!-- Botón -->
-    <button id="btnContinuar" disabled onclick="ingresarAlFormulario()" style="opacity:0.5; cursor:not-allowed; background-color:#cccccc; color:#666666;">
-      Esperando verificación...
-    </button>
+    <!-- Indicador de estado dinámico -->
+    <p id="captchaStatus" style="margin-top: 15px; font-weight: bold; color: #087f8c; min-height: 20px;"></p>
   </div>
 </div>
 
@@ -326,103 +324,83 @@
 
   <!-- LÓGICA JAVASCRIPT -->
   <script>
-    // Coloca la URL de tu Web App desplegada (terminada en /exec)
-    const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec";
+  const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec";
 
-    let turnstileToken = '';
+  // Verificar si ya completó el captcha previamente
+  document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('captcha_verificado') === 'true') {
+      cerrarModal();
+    }
+  });
 
-    // Validar si ya fue verificado previamente
-    document.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('captcha_verificado') === 'true') {
-        cerrarModal();
-      }
-    });
+  function cerrarModal() {
+    const overlay = document.getElementById('captchaOverlay');
+    if (overlay) {
+      overlay.classList.add('oculto');
+    }
+  }
 
-    function cerrarModal() {
-      const overlay = document.getElementById('captchaOverlay');
-      if (overlay) {
-        overlay.classList.add('oculto');
-      }
+  // Se ejecuta AUTOMÁTICAMENTE cuando Turnstile valida la palomita verde
+  window.alCompletarTurnstile = function(token) {
+    const status = document.getElementById('captchaStatus');
+    if (status) status.innerText = 'Verificando con servidor...';
+
+    // Disparar la verificación de inmediato
+    procesarVerificacionAutomatica(token);
+  };
+
+  window.alExpirarTurnstile = function() {
+    const status = document.getElementById('captchaStatus');
+    if (status) {
+      status.style.color = '#c0392b';
+      status.innerText = 'La verificación expiró. Por favor reintenta.';
+    }
+  };
+
+  async function procesarVerificacionAutomatica(token) {
+    const status = document.getElementById('captchaStatus');
+
+    // Obtener IP (Timeout de 2.5s)
+    let userIp = 'IP_No_Detectada';
+    try {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), 2500);
+      const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+      const data = await res.json();
+      userIp = data.ip;
+    } catch (e) {
+      console.warn('Consulta de IP omitida.');
     }
 
-    // Asignaciones explícitas al ámbito global (window)
-    window.alCompletarTurnstile = function(token) {
-      turnstileToken = token;
-      const btn = document.getElementById('btnContinuar');
-      if (btn) {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
-        btn.style.backgroundColor = '#087f8c';
-        btn.style.color = '#ffffff';
-        btn.innerText = 'Continuar al formulario';
-      }
-    };
+    // Petición POST a Google Apps Script
+    try {
+      const respuesta = await fetch(URL_WEB_APP, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({ token: token, userIp: userIp })
+      });
 
-    window.alExpirarTurnstile = function() {
-      turnstileToken = '';
-      const btn = document.getElementById('btnContinuar');
-      if (btn) {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
-        btn.style.cursor = 'not-allowed';
-        btn.style.backgroundColor = '#cccccc';
-        btn.style.color = '#666666';
-        btn.innerText = 'Esperando verificación...';
-      }
-    };
+      const resultado = await respuesta.json();
 
-    async function ingresarAlFormulario() {
-      const btn = document.getElementById('btnContinuar');
-      const token = turnstileToken || (typeof turnstile !== 'undefined' ? turnstile.getResponse() : '');
-
-      if (!token) {
-        alert('Por favor, completa el recuadro de verificación.');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = 'Verificando con servidor...';
-
-      // Obtener IP (Timeout de 2.5s)
-      let userIp = 'IP_No_Detectada';
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
-        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-        const data = await res.json();
-        userIp = data.ip;
-      } catch (e) {
-        console.warn('Consulta de IP omitida.');
-      }
-
-      // Petición a Apps Script con 'text/plain' para evitar bloqueos CORS
-      try {
-        const respuesta = await fetch(URL_WEB_APP, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify({ token: token, userIp: userIp })
-        });
-
-        const resultado = await respuesta.json();
-
-        if (resultado && resultado.success) {
-          localStorage.setItem('captcha_verificado', 'true');
-          cerrarModal();
-        } else {
-          alert('Error de verificación: ' + (resultado ? resultado.message : 'Respuesta nula'));
-          btn.disabled = false;
-          btn.innerText = 'Reintentar';
+      if (resultado && resultado.success) {
+        localStorage.setItem('captcha_verificado', 'true');
+        cerrarModal(); // Cierra el modal automáticamente
+      } else {
+        if (status) {
+          status.style.color = '#c0392b';
+          status.innerText = 'Error: ' + (resultado ? resultado.message : 'Validación rechazada');
         }
-      } catch (error) {
-        alert('Error de conexión: ' + error.message);
-        btn.disabled = false;
-        btn.innerText = 'Reintentar';
+      }
+    } catch (error) {
+      if (status) {
+        status.style.color = '#c0392b';
+        status.innerText = 'Error de conexión con el servidor.';
       }
     }
-  </script>
+  }
+</script>
 
 </body>
 </html>
