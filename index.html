@@ -443,9 +443,11 @@
   });
 
   function cerrarModal() {
-    const overlay = document.getElementById('captchaOverlay') || document.querySelector('.captcha-overlay');
-    if (overlay) overlay.style.display = 'none';
+  const overlay = document.getElementById('captchaOverlay');
+  if (overlay) {
+    overlay.classList.add('oculto');
   }
+}
 
   function obtenerTokenDirecto() {
     if (typeof turnstile !== 'undefined' && turnstile.getResponse) {

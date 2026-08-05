@@ -535,6 +535,7 @@ td small { color: var(--muted); }
     transition-duration: .01ms !important;
   }
 }
+
  /* CSS PARA EMERGENTE VERIFICACION */
 /* Pantalla completa traslúcida que bloquea el fondo */
 .captcha-overlay {
@@ -573,4 +574,9 @@ td small { color: var(--muted); }
   color: #555555;
   font-size: 0.95rem;
   margin-bottom: 20px;
+}
+
+/* Regla para ocultar el modal desde JavaScript */
+.captcha-overlay.oculto {
+  display: none !important;
 }
