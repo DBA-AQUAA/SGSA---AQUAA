@@ -409,7 +409,7 @@
       .then(data => {
         const userIp = data.ip;
 
-        // Llamada remota a la función de Code.gs
+        // Llamada remota a la función de Verificacion.gs
         google.script.run
           .withSuccessHandler((resultado) => {
             if (resultado.success) {
