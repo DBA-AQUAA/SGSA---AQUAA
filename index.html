@@ -326,10 +326,19 @@
   <script>
   const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec";
 
-  // Verificar si ya completó el captcha previamente
+  // Tiempo de validez en horas (puedes cambiar el 24 por las horas que prefieras)
+  const HORAS_VALIDEZ = 24; 
+
   document.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('captcha_verificado') === 'true') {
+    const expiracion = localStorage.getItem('captcha_expiracion');
+    const ahora = Date.now();
+
+    // Si existe la fecha guardada y AÚN NO ha vencido, se oculta el modal
+    if (expiracion && ahora < parseInt(expiracion, 10)) {
       cerrarModal();
+    } else {
+      // Si ya venció o no existe, nos aseguramos de limpiar el dato viejo
+      localStorage.removeItem('captcha_expiracion');
     }
   });
 
@@ -340,12 +349,10 @@
     }
   }
 
-  // Se ejecuta AUTOMÁTICAMENTE cuando Turnstile valida la palomita verde
   window.alCompletarTurnstile = function(token) {
     const status = document.getElementById('captchaStatus');
     if (status) status.innerText = 'Verificando con servidor...';
 
-    // Disparar la verificación de inmediato
     procesarVerificacionAutomatica(token);
   };
 
@@ -360,7 +367,6 @@
   async function procesarVerificacionAutomatica(token) {
     const status = document.getElementById('captchaStatus');
 
-    // Obtener IP (Timeout de 2.5s)
     let userIp = 'IP_No_Detectada';
     try {
       const controller = new AbortController();
@@ -368,11 +374,8 @@
       const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
       const data = await res.json();
       userIp = data.ip;
-    } catch (e) {
-      console.warn('Consulta de IP omitida.');
-    }
+    } catch (e) {}
 
-    // Petición POST a Google Apps Script
     try {
       const respuesta = await fetch(URL_WEB_APP, {
         method: 'POST',
@@ -385,8 +388,11 @@
       const resultado = await respuesta.json();
 
       if (resultado && resultado.success) {
-        localStorage.setItem('captcha_verificado', 'true');
-        cerrarModal(); // Cierra el modal automáticamente
+        // Guardar la hora actual + 24 horas en milisegundos
+        const tiempoExpiracion = Date.now() + (HORAS_VALIDEZ * 60 * 60 * 1000);
+        localStorage.setItem('captcha_expiracion', tiempoExpiracion);
+
+        cerrarModal();
       } else {
         if (status) {
           status.style.color = '#c0392b';
@@ -401,6 +407,7 @@
     }
   }
 </script>
+
 
 </body>
 </html>
