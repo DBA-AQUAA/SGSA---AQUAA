@@ -19,31 +19,22 @@
 </head>
 <body>
 
-  <!-- Ventana emergente de verificación al cargar la página 
-<?php if (!$ya_verificado): ?>
 <div id="captchaOverlay" class="captcha-overlay">
   <div class="captcha-card">
     <h2>Verificación de seguridad</h2>
-    <p>Por favor, completa la validación para continuar al formulario de solicitudes.</p>
+    <p>Por favor, completa la validación para continuar.</p>
 
-     //Widget de Cloudflare Turnstile 
+    <!-- Widget -->
     <div class="cf-turnstile" 
          data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
          data-callback="alCompletarTurnstile"
-         data-expired-callback="alExpirarTurnstile"
-         style="margin: 20px 0;">
+         data-expired-callback="alExpirarTurnstile">
     </div>
 
-    // Botón de continuación (inicia bloqueado)
-    <button id="btnContinuar" 
-            class="button button-primary" 
-            disabled 
-            onclick="ingresarAlFormulario()" 
-            style="width: 100%; opacity: 0.5; cursor: not-allowed;"> 
-    <button id="btnContinuar" disabled onclick="ingresarAlFormulario()">
+    <!-- Botón -->
+    <button id="btnContinuar" disabled onclick="ingresarAlFormulario()" style="opacity:0.5; cursor:not-allowed;">
       Esperando verificación...
     </button>
-  -->
   </div>
 </div>
 
