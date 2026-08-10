@@ -324,9 +324,10 @@
 
   <!-- LÓGICA JAVASCRIPT -->
   <script>
+  // CORREGIDO: Agregado el protocolo https://
   const URL_WEB_APP = "https://script-proxy.frico.workers.dev";
 
-  // Tiempo de validez en horas (puedes cambiar el 24 por las horas que prefieras)
+  // Tiempo de validez en horas
   const HORAS_VALIDEZ = 24; 
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -380,14 +381,14 @@
       const respuesta = await fetch(URL_WEB_APP, {
         method: 'POST',
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
+          'Content-Type': 'application/json' // CORREGIDO: Enviamos JSON explícito
         },
         body: JSON.stringify({ token: token, userIp: userIp })
       });
 
       const resultado = await respuesta.json();
 
-      if (resultado && resultado.success) {
+      if (resultado && (resultado.success || resultado.ok)) {
         // Guardar la hora actual + 24 horas en milisegundos
         const tiempoExpiracion = Date.now() + (HORAS_VALIDEZ * 60 * 60 * 1000);
         localStorage.setItem('captcha_expiracion', tiempoExpiracion);
@@ -396,7 +397,7 @@
       } else {
         if (status) {
           status.style.color = '#c0392b';
-          status.innerText = 'Error: ' + (resultado ? resultado.message : 'Validación rechazada');
+          status.innerText = 'Error: ' + (resultado ? (resultado.message || resultado.mensaje) : 'Validación rechazada');
         }
       }
     } catch (error) {
