@@ -100,7 +100,7 @@ window.SGSA_CATALOG = {
     { id: "PAP028", name: "SOBRES CARTA", unit: "CAJA" },
     { id: "PAP029", name: "SOBRES OFICIO", unit: "CAJA" },
     { id: "PAP030", name: "SOBRE DOBLE CARTA", unit: "CAJA" },
-    { id: "PAP031", name: "SOBRE BILLETES", unit: "CAJA" },
+    { id: "PAP031", name: "SOBRES BILLETES", unit: "CAJA" },
     { id: "PAP032", name: "PEGAMENTO EN BARRA", unit: "CAJA" },
     { id: "PAP033", name: "REGLA", unit: "PIEZA" },
     { id: "PAP034", name: "GOMA", unit: "CAJA" },
