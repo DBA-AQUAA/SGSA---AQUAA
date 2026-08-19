@@ -256,8 +256,7 @@ window.SGSA_CATALOG = {
     { id: "FE116", name:"CINTA DOBLECARA 3M", unit:"PIEZA"},
     { id: "FE117", name:"SOPORTE DE PARED PARA EXTINTOR", unit:"PIEZA"},
     { id: "FE118", name:"GABINETE PARA EXTINTOR", unit:"PIEZA"}
-  ],
-  
+  ],  
   "Equipo de Protección Personal": [
     { id: "EP001", name: "GUANTES DE LATEX G", unit: "CAJA" },
     { id: "EP002", name: "GUANTES DE LATEX M", unit: "CAJA" },
