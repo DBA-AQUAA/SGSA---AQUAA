@@ -224,8 +224,8 @@ window.SGSA_CATALOG = {
   "Equipo de Protección Personal": [
     { id: "EP001", name: "GUANTES DE LATEX G", unit: "CAJA" },
     { id: "EP002", name: "GUANTES DE LATEX M", unit: "CAJA" },
-    { id: "EP003", name: "GABARBINA INPERMEABLE G", unit: "PIEZA" },
-    { id: "EP004", name: "GABARDINA INPERMEABLE M", unit: "PIEZA" },
+    { id: "EP003", name: "GABARBINA IMPERMEABLE G", unit: "PIEZA" },
+    { id: "EP004", name: "GABARDINA IMPERMEABLE M", unit: "PIEZA" },
     { id: "EP005", name: "RESPIRADOR MEDIA COPA CON FILTRO", unit: "PIEZA" },
     { id: "EP006", name: "OVEROL TYVEK", unit: "PIEZA" },
     { id: "EP007", name: "CHALECO SALVAVIDAS", unit: "PIEZA" },
