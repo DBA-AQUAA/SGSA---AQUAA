@@ -3,8 +3,7 @@
 
   const CONFIG = Object.freeze({
     appsScriptUrl: "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec",
-    requestTimeoutMs: 30000,
-    maxSearchResults: 100
+    requestTimeoutMs: 30000
   });
 
   const state = {
@@ -162,9 +161,23 @@
 
     state.selectedProduct = null;
     const term = normalize(elements.productSearch.value);
-    const catalog = window.SGSA_CATALOG[elements.category.value] || [];
+
+    const catalog = [
+      ...(window.SGSA_CATALOG[elements.category.value] || [])
+    ].sort((a, b) =>
+      String(a.name || "").localeCompare(
+        String(b.name || ""),
+        "es-MX",
+        {
+          sensitivity: "base",
+          numeric: true
+        }
+      )
+    );
+
     const matches = catalog.filter((product) =>
-  normalize(`${product.name} ${product.id}`).includes(term));
+      normalize(`${product.name} ${product.id}`).includes(term)
+    );
 
     elements.productResults.replaceChildren();
 
