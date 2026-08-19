@@ -250,7 +250,7 @@ window.SGSA_CATALOG = {
     { id: "EP026", name: "CASCO DE SEGURIDAD", unit: "PIEZA" },
     { id: "EP027", name: "GUANTES ANTICORTES G", unit: "PAR" },
     { id: "EP028", name: "GUANTES ANTICORTES M", unit: "PAR" },
-    { id: "EP029", name: "EMPERMEABLE GABARDINA / PANTALON", unit: "PIEZA" },
+    { id: "EP029", name: "IMPERMEABLE GABARDINA / PANTALON", unit: "PIEZA" },
     { id: "EP030", name: "GUANTES LARGOS NEGROS", unit: "PIEZA" },
     { id: "EP031", name: "FAJA LUMBAR XL", unit: "PIEZA" },
     { id: "EP032", name: "FAJA LUMBAR G", unit: "PIEZA" },
