@@ -4,6 +4,7 @@
   const CONFIG = Object.freeze({
     appsScriptUrl: "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec",
     requestTimeoutMs: 30000,
+    maxSearchResults: 100
   });
 
   const state = {
