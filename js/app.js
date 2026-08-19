@@ -4,7 +4,6 @@
   const CONFIG = Object.freeze({
     appsScriptUrl: "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec",
     requestTimeoutMs: 30000,
-    maxSearchResults: 60
   });
 
   const state = {
@@ -163,9 +162,8 @@
     state.selectedProduct = null;
     const term = normalize(elements.productSearch.value);
     const catalog = window.SGSA_CATALOG[elements.category.value] || [];
-    const matches = catalog
-      .filter((product) => normalize(`${product.name} ${product.id}`).includes(term))
-      .slice(0, CONFIG.maxSearchResults);
+    const matches = catalog.filter((product) =>
+  normalize(`${product.name} ${product.id}`).includes(term));
 
     elements.productResults.replaceChildren();
 
