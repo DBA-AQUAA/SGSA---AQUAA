@@ -201,8 +201,8 @@
               name="quantity"
               type="number"
               min="1"
-              step="any"
-              inputmode="decimal">
+              step="1"
+              inputmode="numeric">
           </label>
 
           <label class="field" for="unit">
@@ -242,125 +242,90 @@
       </section>
 
       <section class="form-card" aria-labelledby="step3-title">
-  <header class="section-header">
-    <span class="step-number" aria-hidden="true">3</span>
+        <header class="section-header">
+          <span class="step-number" aria-hidden="true">3</span>
+          <div>
+            <h2 id="step3-title">Materiales no encontrados en el catálogo</h2>
+            <p>Agregue únicamente los materiales que no encontró en las categorías anteriores.</p>
+          </div>
+        </header>
 
-    <div>
-      <h2 id="step3-title">Materiales no encontrados en el catálogo</h2>
-      <p>
-        Agregue únicamente los materiales que no encontró en las categorías anteriores.
-      </p>
-    </div>
-  </header>
+        <div class="info-box">
+          <span class="info-icon" aria-hidden="true">i</span>
+          <div>
+            <strong>Sección opcional</strong>
+            <p>Capture cada material por separado. El límite general de la solicitud es de 10 productos, incluyendo materiales del catálogo y no encontrados.</p>
+          </div>
+        </div>
 
-  <div class="info-box">
-    <span class="info-icon" aria-hidden="true">i</span>
+        <div class="specific-material-grid">
+          <label class="field" for="specificMaterial">
+            <span>Material *</span>
+            <input
+              id="specificMaterial"
+              name="specificMaterial"
+              type="text"
+              maxlength="200"
+              autocomplete="off"
+              placeholder="Ejemplo: Manguera transparente de 1/2 pulgada">
+          </label>
 
-    <div>
-      <strong>Sección opcional</strong>
-      <p>
-        Capture cada material por separado. El límite general de la solicitud
-        es de 10 productos, incluyendo materiales del catálogo y no encontrados.
-      </p>
-    </div>
-  </div>
+          <label class="field" for="specificQuantity">
+            <span>Cantidad *</span>
+            <input
+              id="specificQuantity"
+              name="specificQuantity"
+              type="number"
+              min="1"
+              step="1"
+              inputmode="numeric">
+          </label>
 
-  <div class="specific-material-grid">
+          <label class="field" for="specificUnit">
+            <span>Unidad *</span>
+            <select id="specificUnit" name="specificUnit">
+              <option value="">Seleccione...</option>
+            </select>
+          </label>
 
-    <label class="field" for="specificMaterial">
-      <span>Material *</span>
+          <label class="field specific-observations" for="specificObservations">
+            <span>Observaciones</span>
+            <input
+              id="specificObservations"
+              name="specificObservations"
+              type="text"
+              maxlength="500"
+              placeholder="Marca, medida, color u otra característica (opcional)">
+          </label>
 
-      <input
-        id="specificMaterial"
-        name="specificMaterial"
-        type="text"
-        maxlength="200"
-        autocomplete="off"
-        placeholder="Ejemplo: Manguera transparente de 1/2 pulgada">
-    </label>
+          <button id="addSpecificMaterialBtn" class="button button-secondary add-material" type="button">
+            Agregar material
+          </button>
+        </div>
 
-    <label class="field" for="specificQuantity">
-      <span>Cantidad *</span>
+        <p id="specificMaterialMessage" class="inline-message" role="alert" hidden></p>
 
-      <input
-        id="specificQuantity"
-        name="specificQuantity"
-        type="number"
-        min="1"
-        step="1"
-        inputmode="numeric">
-    </label>
+        <div id="emptySpecificMaterials" class="empty-state">
+          <strong>No hay materiales no encontrados</strong>
+          <span>Utilice esta sección solamente cuando el material no exista en el catálogo.</span>
+        </div>
 
-    <label class="field" for="specificUnit">
-      <span>Unidad *</span>
-
-      <select id="specificUnit" name="specificUnit">
-        <option value="">Seleccione...</option>
-      </select>
-    </label>
-
-    <label
-      class="field specific-observations"
-      for="specificObservations">
-
-      <span>Observaciones</span>
-
-      <input
-        id="specificObservations"
-        name="specificObservations"
-        type="text"
-        maxlength="500"
-        placeholder="Marca, medida, color u otra característica (opcional)">
-    </label>
-
-    <button
-      id="addSpecificMaterialBtn"
-      class="button button-secondary add-material"
-      type="button">
-
-      Agregar material
-    </button>
-  </div>
-
-  <p
-    id="specificMaterialMessage"
-    class="inline-message"
-    role="alert"
-    hidden>
-  </p>
-
-  <div id="emptySpecificMaterials" class="empty-state">
-    <strong>No hay materiales no encontrados</strong>
-
-    <span>
-      Utilice esta sección solamente cuando el material no exista en el catálogo.
-    </span>
-  </div>
-
-  <div
-    id="specificMaterialsTableWrapper"
-    class="table-wrapper"
-    hidden>
-
-    <table>
-      <caption>
-        Materiales no encontrados incluidos en la solicitud
-      </caption>
-
-      <thead>
-        <tr>
-          <th scope="col">Material</th>
-          <th scope="col">Cantidad</th>
-          <th scope="col">Unidad</th>
-          <th scope="col">Observaciones</th>
-          <th scope="col">Acción</th>
-        </tr>
-      </thead>
-
-      <tbody id="specificMaterialsTableBody"></tbody>
-    </table>
-  </div>
-</section>
+        <div id="specificMaterialsTableWrapper" class="table-wrapper" hidden>
+          <table>
+            <caption>Materiales no encontrados incluidos en la solicitud</caption>
+            <thead>
+              <tr>
+                <th scope="col">Material</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Unidad</th>
+                <th scope="col">Observaciones</th>
+                <th scope="col">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="specificMaterialsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
 
       <section class="submit-panel" aria-label="Confirmación y envío">
 
