@@ -380,11 +380,12 @@
 
   <!-- LÓGICA JAVASCRIPT -->
 <script>
-  const URL_WEB_APP = "https://script-proxy.frico.workers.dev";
+  const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec";
+
+ /* "https://script-proxy.frico.workers.dev";  */
+
   const HORAS_VALIDEZ = 24;
-
   let erroresTurnstile = 0;
-
   /*
    * ==========================================================
    * COMPROBAR VALIDACIÓN PREVIA
@@ -402,27 +403,21 @@
         expiracion &&
         ahora < parseInt(expiracion, 10)
       ) {
-
         cerrarModal();
-
       } else {
-
         localStorage.removeItem(
           "captcha_expiracion"
         );
-
         mostrarEstado(
           "Cargando verificación de seguridad..."
         );
       }
 
     } catch (error) {
-
       console.warn(
         "No fue posible consultar localStorage:",
         error
       );
-
       mostrarEstado(
         "Cargando verificación de seguridad..."
       );
@@ -437,7 +432,6 @@
    * ==========================================================
    */
   function cerrarModal() {
-
     const overlay =
       document.getElementById(
         "captchaOverlay"
@@ -446,9 +440,7 @@
     if (overlay) {
       overlay.classList.add("oculto");
     }
-
   }
-
 
   /*
    * ==========================================================
@@ -459,7 +451,6 @@
     mensaje,
     color
   ) {
-
     const status =
       document.getElementById(
         "captchaStatus"
@@ -471,12 +462,9 @@
 
     status.style.color =
       color || "#087f8c";
-
     status.innerText =
       mensaje;
-
   }
-
 
   /*
    * ==========================================================
@@ -485,16 +473,12 @@
    */
   window.alCompletarTurnstile =
     function (token) {
-
       erroresTurnstile = 0;
-
       if (!token) {
-
         mostrarEstado(
           "No se recibió una verificación válida.",
           "#c0392b"
         );
-
         return;
       }
 
@@ -508,7 +492,6 @@
 
     };
 
-
   /*
    * ==========================================================
    * TURNSTILE EXPIRADO
@@ -516,14 +499,12 @@
    */
   window.alExpirarTurnstile =
     function () {
-
       mostrarEstado(
         "La verificación expiró. Por favor reintenta.",
         "#c0392b"
       );
 
     };
-
 
   /*
    * ==========================================================
@@ -532,9 +513,7 @@
    */
   window.alErrorTurnstile =
     function (errorCode) {
-
       erroresTurnstile++;
-
       console.warn(
         "Turnstile error:",
         errorCode,
@@ -547,11 +526,9 @@
        * a intentar automáticamente.
        */
       if (erroresTurnstile < 3) {
-
         mostrarEstado(
           "Cargando verificación de seguridad..."
         );
-
         return false;
       }
 
@@ -559,11 +536,8 @@
         "No fue posible completar la verificación de seguridad. Revisa tu conexión e intenta nuevamente.",
         "#c0392b"
       );
-
       return true;
-
     };
-
 
   /*
    * ==========================================================
@@ -573,7 +547,6 @@
   async function procesarVerificacionAutomatica(
     token
   ) {
-
     const controller =
       new AbortController();
 
@@ -586,54 +559,43 @@
       );
 
     try {
-
       const respuesta =
         await fetch(
           URL_WEB_APP,
           {
             method: "POST",
-
             headers: {
               "Content-Type":
                 "application/json"
             },
-
             body:
               JSON.stringify({
                 token: token
               }),
-
             signal:
               controller.signal
           }
         );
-
       clearTimeout(timeout);
 
       /*
        * Validar respuesta HTTP.
        */
       if (!respuesta.ok) {
-
         throw new Error(
           "HTTP " +
           respuesta.status
         );
-
       }
 
       /*
        * Convertir respuesta a JSON.
        */
       let resultado;
-
       try {
-
         resultado =
           await respuesta.json();
-
       } catch (errorJson) {
-
         console.error(
           "Respuesta no JSON:",
           errorJson
@@ -642,7 +604,6 @@
         throw new Error(
           "Respuesta inválida del servidor."
         );
-
       }
 
       /*
@@ -666,23 +627,18 @@
           );
 
         try {
-
           localStorage.setItem(
             "captcha_expiracion",
             String(tiempoExpiracion)
           );
 
         } catch (errorStorage) {
-
           console.warn(
             "No fue posible guardar la sesión:",
             errorStorage
           );
-
         }
-
         cerrarModal();
-
         return;
       }
 
@@ -693,23 +649,18 @@
         "Validación rechazada";
 
       if (resultado) {
-
         mensaje =
           resultado.message ||
           resultado.mensaje ||
           mensaje;
-
       }
-
       mostrarEstado(
         "Error: " + mensaje,
         "#c0392b"
       );
 
     } catch (error) {
-
       clearTimeout(timeout);
-
       console.error(
         "Error de verificación:",
         error
@@ -719,23 +670,17 @@
         error &&
         error.name === "AbortError"
       ) {
-
         mostrarEstado(
           "La verificación tardó demasiado. Revisa tu conexión e intenta nuevamente.",
           "#c0392b"
         );
-
       } else {
-
         mostrarEstado(
           "Error de conexión con el servidor.",
           "#c0392b"
         );
-
       }
-
     }
-
   }
 </script>
 
