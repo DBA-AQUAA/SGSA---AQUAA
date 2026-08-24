@@ -27,9 +27,10 @@
 
     <!-- Widget Cloudflare Turnstile -->
     <div class="cf-turnstile" 
-         data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
-         data-callback="alCompletarTurnstile"
-         data-expired-callback="alExpirarTurnstile">
+        data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
+        data-callback="alCompletarTurnstile"
+        data-expired-callback="alExpirarTurnstile"
+        data-error-callback="alErrorTurnstile">
     </div>
 
     <!-- Indicador de estado dinámico -->
@@ -362,6 +363,24 @@
     if (status) {
       status.style.color = '#c0392b';
       status.innerText = 'La verificación expiró. Por favor reintenta.';
+    }
+  };
+
+  window.alErrorTurnstile = function(errorCode) {
+
+    console.error(
+      'Error Turnstile:',
+      errorCode
+    );
+
+    const status =
+      document.getElementById('captchaStatus');
+
+    if (status) {
+      status.style.color = '#c0392b';
+      status.innerText =
+        'No fue posible cargar la verificación de seguridad. Código: ' +
+        errorCode;
     }
   };
 
