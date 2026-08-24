@@ -377,141 +377,201 @@
   <script src="js/app.js"></script>
 
   <!-- LÓGICA JAVASCRIPT -->
-  <script>
-  // CORREGIDO: Agregado el protocolo https://
+<script>
   const URL_WEB_APP = "https://script-proxy.frico.workers.dev";
-
-  // Tiempo de validez en horas
-  const HORAS_VALIDEZ = 24; 
+  const HORAS_VALIDEZ = 24;
 
   document.addEventListener('DOMContentLoaded', () => {
     const expiracion = localStorage.getItem('captcha_expiracion');
     const ahora = Date.now();
 
-    // Si existe la fecha guardada y AÚN NO ha vencido, se oculta el modal
     if (expiracion && ahora < parseInt(expiracion, 10)) {
       cerrarModal();
     } else {
-      // Si ya venció o no existe, nos aseguramos de limpiar el dato viejo
       localStorage.removeItem('captcha_expiracion');
     }
   });
 
   function cerrarModal() {
     const overlay = document.getElementById('captchaOverlay');
+
     if (overlay) {
       overlay.classList.add('oculto');
     }
   }
 
-  window.alCompletarTurnstile = function(token) {
+  function mostrarEstado(mensaje, color = '#087f8c') {
     const status = document.getElementById('captchaStatus');
-    if (status) status.innerText = 'Verificando con servidor...';
+
+    if (status) {
+      status.style.color = color;
+      status.innerText = mensaje;
+    }
+  }
+
+  window.alCompletarTurnstile = function(token) {
+    mostrarEstado('Verificando con servidor...');
 
     procesarVerificacionAutomatica(token);
   };
 
   window.alExpirarTurnstile = function() {
-    const status = document.getElementById('captchaStatus');
-    if (status) {
-      status.style.color = '#c0392b';
-      status.innerText = 'La verificación expiró. Por favor reintenta.';
-    }
+    mostrarEstado(
+      'La verificación expiró. Por favor reintenta.',
+      '#c0392b'
+    );
   };
 
   window.alErrorTurnstile = function(errorCode) {
-    console.error(
-      'Error Turnstile:',
-      errorCode
+    console.error('Error Turnstile:', errorCode);
+
+    mostrarEstado(
+      'No fue posible cargar la verificación de seguridad. Código: ' +
+      errorCode,
+      '#c0392b'
     );
-
-    const status =
-      document.getElementById('captchaStatus');
-
-    if (status) {
-      status.style.color = '#c0392b';
-      status.innerText =
-        'No fue posible cargar la verificación de seguridad. Código: ' +
-        errorCode;
-    }
   };
 
   async function procesarVerificacionAutomatica(token) {
-    const status = document.getElementById('captchaStatus');
+    const controller = new AbortController();
 
-    let userIp = 'IP_No_Detectada';
-    try {
-      const controller = new AbortController();
-      setTimeout(() => controller.abort(), 5000);
-      const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-      const data = await res.json();
-      userIp = data.ip;
-    } catch (e) {}
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 12000);
 
     try {
       const respuesta = await fetch(URL_WEB_APP, {
         method: 'POST',
+
         headers: {
-          'Content-Type': 'application/json' // CORREGIDO: Enviamos JSON explícito
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ token: token, userIp: userIp })
+
+        body: JSON.stringify({
+          token: token
+        }),
+
+        signal: controller.signal
       });
 
-      const resultado = await respuesta.json();
+      clearTimeout(timeout);
 
-      if (resultado && (resultado.success || resultado.ok)) {
-        // Guardar la hora actual + 24 horas en milisegundos
-        const tiempoExpiracion = Date.now() + (HORAS_VALIDEZ * 60 * 60 * 1000);
-        localStorage.setItem('captcha_expiracion', tiempoExpiracion);
+      if (!respuesta.ok) {
+        throw new Error(
+          'Respuesta HTTP no válida: ' +
+          respuesta.status
+        );
+      }
+
+      let resultado;
+
+      try {
+        resultado = await respuesta.json();
+      } catch (errorJson) {
+        throw new Error(
+          'El servidor no devolvió JSON válido.'
+        );
+      }
+
+      if (
+        resultado &&
+        (resultado.success === true || resultado.ok === true)
+      ) {
+        const tiempoExpiracion =
+          Date.now() +
+          (
+            HORAS_VALIDEZ *
+            60 *
+            60 *
+            1000
+          );
+
+        localStorage.setItem(
+          'captcha_expiracion',
+          String(tiempoExpiracion)
+        );
 
         cerrarModal();
+
       } else {
-        if (status) {
-          status.style.color = '#c0392b';
-          status.innerText = 'Error: ' + (resultado ? (resultado.message || resultado.mensaje) : 'Validación rechazada');
-        }
+
+        mostrarEstado(
+          'Error: ' +
+          (
+            resultado?.message ||
+            resultado?.mensaje ||
+            'Validación rechazada'
+          ),
+          '#c0392b'
+        );
       }
+
     } catch (error) {
-      if (status) {
-        status.style.color = '#c0392b';
-        status.innerText = 'Error de conexión con el servidor.';
+      clearTimeout(timeout);
+
+      console.error(
+        'Error de verificación:',
+        error
+      );
+
+      if (error.name === 'AbortError') {
+
+        mostrarEstado(
+          'La verificación tardó demasiado. Revisa tu conexión e intenta nuevamente.',
+          '#c0392b'
+        );
+
+      } else {
+
+        mostrarEstado(
+          'Error de conexión con el servidor.',
+          '#c0392b'
+        );
       }
     }
   }
 
-  window.addEventListener('load', function () {
+  window.addEventListener('load', function() {
 
-  setTimeout(function () {
+    setTimeout(function() {
 
-    const widget =
-      document.querySelector('.cf-turnstile');
+      const overlay =
+        document.getElementById('captchaOverlay');
 
-    const iframe =
-      widget
-        ? widget.querySelector('iframe')
-        : null;
-
-    if (!iframe) {
-
-      const status =
-        document.getElementById(
-          'captchaStatus'
-        );
-
-      if (status) {
-        status.style.color = '#c0392b';
-        status.innerText =
-          'No fue posible cargar la verificación de seguridad. Revisa tu conexión e intenta nuevamente.';
+      /*
+       * Si ya estaba validado previamente,
+       * no hacemos la comprobación.
+       */
+      if (
+        overlay &&
+        overlay.classList.contains('oculto')
+      ) {
+        return;
       }
 
-      console.error(
-        'Cloudflare Turnstile no creó el iframe.'
-      );
-    }
+      const widget =
+        document.querySelector('.cf-turnstile');
 
-  }, 8000);
+      const iframe =
+        widget
+          ? widget.querySelector('iframe')
+          : null;
 
-});
+      if (!iframe) {
+
+        mostrarEstado(
+          'No fue posible cargar la verificación de seguridad. Revisa tu conexión e intenta nuevamente.',
+          '#c0392b'
+        );
+
+        console.error(
+          'Cloudflare Turnstile no creó el iframe.'
+        );
+      }
+
+    }, 8000);
+
+  });
 </script>
 
 
