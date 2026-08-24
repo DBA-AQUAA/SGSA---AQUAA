@@ -553,13 +553,14 @@ td small { color: var(--muted); }
 /*-------------------------------------
 ----------------------------------------
 ----------------------------------------- */
- /* CSS PARA EMERGENTE VERIFICACION */
+/* CSS PARA EMERGENTE VERIFICACION */
 
- .captcha-overlay {
+.captcha-overlay {
   position: fixed;
   inset: 0;
 
   width: 100%;
+  height: 100vh;
   min-height: 100dvh;
 
   background: rgba(0, 0, 0, 0.75);
@@ -570,6 +571,8 @@ td small { color: var(--muted); }
 
   padding: 20px;
   box-sizing: border-box;
+
+  overflow-y: auto;
 
   z-index: 99999;
 }
@@ -582,13 +585,14 @@ td small { color: var(--muted); }
   position: relative;
 
   background: #ffffff;
+  color: #333333;
 
   padding: 30px;
   border-radius: 12px;
 
   text-align: center;
 
-  width: min(420px, 100%);
+  width: 100%;
   max-width: 420px;
 
   box-sizing: border-box;
