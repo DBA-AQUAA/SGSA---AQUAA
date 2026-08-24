@@ -4,12 +4,13 @@
   const CONFIG = Object.freeze({
     appsScriptUrl: "https://script.google.com/macros/s/AKfycbxC34aWotlhblyyP6quSFoEBJA273c0b3gchD_rKcmWeLIADhsQi4WjPEgKwPOScref/exec",
     requestTimeoutMs: 30000,
-    maxSearchResults: 60
+    maxProducts: 90
   });
 
   const state = {
     selectedProduct: null,
     products: [],
+    specificMaterials: [],
     isSubmitting: false
   };
 
@@ -43,7 +44,7 @@
     bindEvents();
     renderTable();
     updateReasonCounter();
-    updateNotesCounter();
+    renderSpecificMaterialsTable();
   }
 
   function cacheElements() {
@@ -65,8 +66,15 @@
       "productsTableWrapper",
       "emptyProducts",
       "productError",
-      "notes",
-      "notesCountValue",
+      "specificMaterial",
+      "specificQuantity",
+      "specificUnit",
+      "specificObservations",
+      "addSpecificMaterialBtn",
+      "specificMaterialMessage",
+      "specificMaterialsTableBody",
+      "specificMaterialsTableWrapper",
+      "emptySpecificMaterials",
       "confirmation",
       "submitStatus",
       "submitBtn",
@@ -88,7 +96,8 @@
     elements.addProductBtn.addEventListener("click", addProduct);
     elements.productsTableBody.addEventListener("click", removeProduct);
     elements.reason.addEventListener("input", updateReasonCounter);
-    elements.notes.addEventListener("input", updateNotesCounter);
+    elements.addSpecificMaterialBtn.addEventListener("click", addSpecificMaterial);
+    elements.specificMaterialsTableBody.addEventListener("click", removeSpecificMaterial);
     elements.requestForm.addEventListener("reset", resetFormState);
     elements.requestForm.addEventListener("submit", submitRequest);
 
@@ -103,6 +112,7 @@
     populateSelect(elements.area, window.SGSA_GENERAL_CATALOGS.areas);
     populateSelect(elements.branch, window.SGSA_GENERAL_CATALOGS.sucursales);
     populateSelect(elements.unit, window.SGSA_GENERAL_CATALOGS.unidades);
+    populateSelect(elements.specificUnit, window.SGSA_GENERAL_CATALOGS.unidades);
   }
 
   function populateSelect(selectElement, values) {
@@ -162,10 +172,23 @@
 
     state.selectedProduct = null;
     const term = normalize(elements.productSearch.value);
-    const catalog = window.SGSA_CATALOG[elements.category.value] || [];
-    const matches = catalog
-      .filter((product) => normalize(`${product.name} ${product.id}`).includes(term))
-      .slice(0, CONFIG.maxSearchResults);
+
+    const catalog = [
+      ...(window.SGSA_CATALOG[elements.category.value] || [])
+    ].sort((a, b) =>
+      String(a.name || "").localeCompare(
+        String(b.name || ""),
+        "es-MX",
+        {
+          sensitivity: "base",
+          numeric: true
+        }
+      )
+    );
+
+    const matches = catalog.filter((product) =>
+      normalize(`${product.name} ${product.id}`).includes(term)
+    );
 
     elements.productResults.replaceChildren();
 
@@ -219,9 +242,9 @@
       return showProductError("Seleccione un material de la lista de resultados.");
     }
 
-    if (!Number.isFinite(quantity) || quantity <= 0) {
+    if (!Number.isInteger(quantity) || quantity <= 0) {
       elements.quantity.focus();
-      return showProductError("Capture una cantidad mayor que cero.");
+      return showProductError("Capture una cantidad entera mayor que cero.");
     }
 
     const unit = cleanText(elements.unit.value);
@@ -232,6 +255,10 @@
 
     if (state.products.some((item) => item.productId === state.selectedProduct.id)) {
       return showProductError("Ese material ya fue agregado a la solicitud.");
+    }
+
+    if (getTotalProductCount() >= CONFIG.maxProducts) {
+      return showProductError(`La solicitud permite un máximo de ${CONFIG.maxProducts} productos.`);
     }
 
     state.products.push({
@@ -245,6 +272,102 @@
     resetProductBuilder();
     renderTable();
     elements.productSearch.focus();
+  }
+
+  function addSpecificMaterial() {
+    hideMessages();
+
+    const material = cleanText(elements.specificMaterial.value);
+    const quantity = Number(elements.specificQuantity.value);
+    const unit = cleanText(elements.specificUnit.value);
+    const observations = cleanText(elements.specificObservations.value);
+
+    if (!material) {
+      elements.specificMaterial.focus();
+      return showSpecificMaterialMessage("Capture el nombre del material.", "error");
+    }
+
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      elements.specificQuantity.focus();
+      return showSpecificMaterialMessage("Capture una cantidad entera mayor que cero.", "error");
+    }
+
+    if (!unit) {
+      elements.specificUnit.focus();
+      return showSpecificMaterialMessage("Seleccione una unidad de medida.", "error");
+    }
+
+    if (getTotalProductCount() >= CONFIG.maxProducts) {
+      return showSpecificMaterialMessage(`La solicitud permite un máximo de ${CONFIG.maxProducts} productos.`, "error");
+    }
+
+    const normalizedMaterial = normalize(material);
+    const isDuplicate = state.specificMaterials.some(
+      (item) => normalize(item.material) === normalizedMaterial
+    ) || state.products.some(
+      (item) => normalize(item.productName) === normalizedMaterial
+    );
+
+    state.specificMaterials.push({ material, quantity, unit, observations });
+    resetSpecificMaterialBuilder();
+    renderSpecificMaterialsTable();
+
+    if (isDuplicate) {
+      showSpecificMaterialMessage("Advertencia: este material ya aparece en la solicitud. Verifique si desea conservar ambas partidas.", "warning");
+    }
+
+    elements.specificMaterial.focus();
+  }
+
+  function resetSpecificMaterialBuilder() {
+    elements.specificMaterial.value = "";
+    elements.specificQuantity.value = "";
+    elements.specificUnit.value = "";
+    elements.specificObservations.value = "";
+  }
+
+  function removeSpecificMaterial(event) {
+    const button = event.target.closest(".remove-specific-button");
+    if (!button || state.isSubmitting) return;
+
+    const index = Number(button.dataset.index);
+    if (!Number.isInteger(index) || index < 0 || index >= state.specificMaterials.length) return;
+
+    state.specificMaterials.splice(index, 1);
+    renderSpecificMaterialsTable();
+    hideSpecificMaterialMessage();
+  }
+
+  function renderSpecificMaterialsTable() {
+    elements.specificMaterialsTableBody.replaceChildren();
+
+    state.specificMaterials.forEach((item, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><strong>${escapeHtml(item.material)}</strong></td>
+        <td>${formatQuantity(item.quantity)}</td>
+        <td>${escapeHtml(item.unit)}</td>
+        <td>${escapeHtml(item.observations || "Sin observaciones")}</td>
+        <td><button type="button" class="remove-button remove-specific-button" data-index="${index}" aria-label="Eliminar ${escapeHtml(item.material)}">Eliminar</button></td>`;
+      elements.specificMaterialsTableBody.appendChild(row);
+    });
+
+    const hasSpecificMaterials = state.specificMaterials.length > 0;
+    elements.specificMaterialsTableWrapper.hidden = !hasSpecificMaterials;
+    elements.emptySpecificMaterials.hidden = hasSpecificMaterials;
+  }
+
+  function getTotalProductCount() {
+    return state.products.length + state.specificMaterials.length;
+  }
+
+  function hasPendingSpecificMaterial() {
+    return Boolean(
+      cleanText(elements.specificMaterial.value) ||
+      cleanText(elements.specificQuantity.value) ||
+      cleanText(elements.specificUnit.value) ||
+      cleanText(elements.specificObservations.value)
+    );
   }
 
   function resetProductBuilder() {
@@ -298,9 +421,16 @@
       return;
     }
 
-    if (!state.products.length) {
-      showProductError("Agregue al menos un material a la solicitud.");
+    if (!getTotalProductCount()) {
+      showProductError("Agregue al menos un material del catálogo o no encontrado.");
       elements.emptyProducts.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    if (hasPendingSpecificMaterial()) {
+      showSpecificMaterialMessage("Agregue el material no encontrado pendiente o limpie sus campos antes de enviar.", "error");
+      elements.specificMaterial.scrollIntoView({ behavior: "smooth", block: "center" });
+      elements.specificMaterial.focus();
       return;
     }
 
@@ -357,13 +487,18 @@
       area: cleanText(elements.area.value),
       sucursal: cleanText(elements.branch.value),
       motivo: cleanText(elements.reason.value),
-      observaciones: cleanText(elements.notes.value),
       productos: state.products.map((item) => ({
         codigo: item.productId,
         categoria: item.category,
         material: item.productName,
         cantidad: item.quantity,
         unidad: item.unit
+      })),
+      materialesEspecificos: state.specificMaterials.map((item) => ({
+        material: item.material,
+        cantidad: item.quantity,
+        unidad: item.unit,
+        observaciones: item.observations
       }))
     };
   }
@@ -412,28 +547,26 @@
   function resetFormState() {
     window.setTimeout(() => {
       state.products = [];
+      state.specificMaterials = [];
       state.selectedProduct = null;
       state.isSubmitting = false;
 
       elements.productSearch.disabled = true;
       elements.productSearch.placeholder = "Seleccione primero una categoría";
       elements.reasonCountValue.textContent = "0";
-      elements.notesCountValue.textContent = "0";
 
       closeSearchResults();
       hideMessages();
       clearFieldErrors();
       renderTable();
+      renderSpecificMaterialsTable();
+      hideSpecificMaterialMessage();
       setLoading(false);
     }, 0);
   }
 
   function updateReasonCounter() {
     elements.reasonCountValue.textContent = String(elements.reason.value.length);
-  }
-
-  function updateNotesCounter() {
-    elements.notesCountValue.textContent = String(elements.notes.value.length);
   }
 
   function showSuccessModal(folio) {
@@ -473,6 +606,7 @@
     state.isSubmitting = active;
     elements.submitBtn.disabled = active;
     elements.addProductBtn.disabled = active;
+    elements.addSpecificMaterialBtn.disabled = active;
     elements.submitBtn.setAttribute("aria-busy", String(active));
 
     const spinner = elements.submitBtn.querySelector(".spinner");
@@ -492,6 +626,19 @@
     elements.productError.textContent = "";
   }
 
+  function showSpecificMaterialMessage(message, type = "error") {
+    elements.specificMaterialMessage.textContent = message;
+    elements.specificMaterialMessage.classList.toggle("error", type === "error");
+    elements.specificMaterialMessage.classList.toggle("warning", type === "warning");
+    elements.specificMaterialMessage.hidden = false;
+  }
+
+  function hideSpecificMaterialMessage() {
+    elements.specificMaterialMessage.hidden = true;
+    elements.specificMaterialMessage.textContent = "";
+    elements.specificMaterialMessage.classList.remove("error", "warning");
+  }
+
   function showStatus(message, type = "success") {
     elements.submitStatus.textContent = message;
     elements.submitStatus.classList.toggle("error", type === "error");
@@ -500,6 +647,7 @@
 
   function hideMessages() {
     hideProductError();
+    hideSpecificMaterialMessage();
     elements.submitStatus.hidden = true;
     elements.submitStatus.textContent = "";
     elements.submitStatus.classList.remove("error");
@@ -562,7 +710,7 @@
 
   function formatQuantity(value) {
     return Number(value).toLocaleString("es-MX", {
-      maximumFractionDigits: 2
+      maximumFractionDigits: 0
     });
   }
 

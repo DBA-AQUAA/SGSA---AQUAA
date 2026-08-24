@@ -13,7 +13,8 @@ window.SGSA_GENERAL_CATALOGS = Object.freeze({
     "Planeación y Proyectos",
     "Recursos Humanos",
     "Saneamiento",
-    "Tesorería"
+    "Tesorería",
+    "Otro"
   ]),
 
   sucursales: Object.freeze([
@@ -23,26 +24,28 @@ window.SGSA_GENERAL_CATALOGS = Object.freeze({
     "El Refugio",
     "La Pradera",
     "Zakia",
-    "Zibatá"
+    "Zibatá",
+    "Otro"
   ]),
 
   unidades: Object.freeze([
-    "Litro",
-    "Pieza",
+    "Botella",
+    "Bulto",
     "Caja",
-    "Paquete",
-    "Par",
-    "Juego",
+    "Costal",
     "Cubeta",
     "Galón",
+    "Juego",
     "Kilogramo",
-    "Metro",
-    "Rollo",
-    "Costal",
-    "Bulto",
-    "Botella",
     "Lata",
+    "Litro",
+    "Metro",
+    "Paquete",
+    "Par",
+    "Pieza",
+    "Rollo",
     "Sobre",
+    "Tramo",
     "Otro"
   ])
 });
