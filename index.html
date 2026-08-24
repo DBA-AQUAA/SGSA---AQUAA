@@ -30,7 +30,9 @@
         data-sitekey="0x4AAAAAAEGXNq1w_tDjES0H" 
         data-callback="alCompletarTurnstile"
         data-expired-callback="alExpirarTurnstile"
-        data-error-callback="alErrorTurnstile">
+        data-error-callback="alErrorTurnstile"
+        data-retry="auto"
+        data-retry-interval="5000">
     </div>
 
     <!-- Indicador de estado dinámico -->
@@ -381,102 +383,279 @@
   const URL_WEB_APP = "https://script-proxy.frico.workers.dev";
   const HORAS_VALIDEZ = 24;
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const expiracion = localStorage.getItem('captcha_expiracion');
-    const ahora = Date.now();
+  let erroresTurnstile = 0;
 
-    if (expiracion && ahora < parseInt(expiracion, 10)) {
-      cerrarModal();
-    } else {
-      localStorage.removeItem('captcha_expiracion');
+  /*
+   * ==========================================================
+   * COMPROBAR VALIDACIÓN PREVIA
+   * ==========================================================
+   */
+  document.addEventListener("DOMContentLoaded", function () {
+    try {
+      const expiracion =
+        localStorage.getItem("captcha_expiracion");
+
+      const ahora =
+        Date.now();
+
+      if (
+        expiracion &&
+        ahora < parseInt(expiracion, 10)
+      ) {
+
+        cerrarModal();
+
+      } else {
+
+        localStorage.removeItem(
+          "captcha_expiracion"
+        );
+
+        mostrarEstado(
+          "Cargando verificación de seguridad..."
+        );
+      }
+
+    } catch (error) {
+
+      console.warn(
+        "No fue posible consultar localStorage:",
+        error
+      );
+
+      mostrarEstado(
+        "Cargando verificación de seguridad..."
+      );
     }
+
   });
 
+
+  /*
+   * ==========================================================
+   * OCULTAR MODAL
+   * ==========================================================
+   */
   function cerrarModal() {
-    const overlay = document.getElementById('captchaOverlay');
+
+    const overlay =
+      document.getElementById(
+        "captchaOverlay"
+      );
 
     if (overlay) {
-      overlay.classList.add('oculto');
+      overlay.classList.add("oculto");
     }
+
   }
 
-  function mostrarEstado(mensaje, color = '#087f8c') {
-    const status = document.getElementById('captchaStatus');
 
-    if (status) {
-      status.style.color = color;
-      status.innerText = mensaje;
+  /*
+   * ==========================================================
+   * MOSTRAR MENSAJES
+   * ==========================================================
+   */
+  function mostrarEstado(
+    mensaje,
+    color
+  ) {
+
+    const status =
+      document.getElementById(
+        "captchaStatus"
+      );
+
+    if (!status) {
+      return;
     }
+
+    status.style.color =
+      color || "#087f8c";
+
+    status.innerText =
+      mensaje;
+
   }
 
-  window.alCompletarTurnstile = function(token) {
-    mostrarEstado('Verificando con servidor...');
 
-    procesarVerificacionAutomatica(token);
-  };
+  /*
+   * ==========================================================
+   * TURNSTILE COMPLETADO
+   * ==========================================================
+   */
+  window.alCompletarTurnstile =
+    function (token) {
 
-  window.alExpirarTurnstile = function() {
-    mostrarEstado(
-      'La verificación expiró. Por favor reintenta.',
-      '#c0392b'
-    );
-  };
+      erroresTurnstile = 0;
 
-  window.alErrorTurnstile = function(errorCode) {
-    console.error('Error Turnstile:', errorCode);
+      if (!token) {
 
-    mostrarEstado(
-      'No fue posible cargar la verificación de seguridad. Código: ' +
-      errorCode,
-      '#c0392b'
-    );
-  };
+        mostrarEstado(
+          "No se recibió una verificación válida.",
+          "#c0392b"
+        );
 
-  async function procesarVerificacionAutomatica(token) {
-    const controller = new AbortController();
+        return;
+      }
 
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, 12000);
+      mostrarEstado(
+        "Verificando con servidor..."
+      );
+
+      procesarVerificacionAutomatica(
+        token
+      );
+
+    };
+
+
+  /*
+   * ==========================================================
+   * TURNSTILE EXPIRADO
+   * ==========================================================
+   */
+  window.alExpirarTurnstile =
+    function () {
+
+      mostrarEstado(
+        "La verificación expiró. Por favor reintenta.",
+        "#c0392b"
+      );
+
+    };
+
+
+  /*
+   * ==========================================================
+   * ERROR TEMPORAL DE TURNSTILE
+   * ==========================================================
+   */
+  window.alErrorTurnstile =
+    function (errorCode) {
+
+      erroresTurnstile++;
+
+      console.warn(
+        "Turnstile error:",
+        errorCode,
+        "Intento:",
+        erroresTurnstile
+      );
+
+      /*
+       * Turnstile normalmente vuelve
+       * a intentar automáticamente.
+       */
+      if (erroresTurnstile < 3) {
+
+        mostrarEstado(
+          "Cargando verificación de seguridad..."
+        );
+
+        return false;
+      }
+
+      mostrarEstado(
+        "No fue posible completar la verificación de seguridad. Revisa tu conexión e intenta nuevamente.",
+        "#c0392b"
+      );
+
+      return true;
+
+    };
+
+
+  /*
+   * ==========================================================
+   * VERIFICAR TOKEN EN EL SERVIDOR
+   * ==========================================================
+   */
+  async function procesarVerificacionAutomatica(
+    token
+  ) {
+
+    const controller =
+      new AbortController();
+
+    const timeout =
+      setTimeout(
+        function () {
+          controller.abort();
+        },
+        15000
+      );
 
     try {
-      const respuesta = await fetch(URL_WEB_APP, {
-        method: 'POST',
 
-        headers: {
-          'Content-Type': 'application/json'
-        },
+      const respuesta =
+        await fetch(
+          URL_WEB_APP,
+          {
+            method: "POST",
 
-        body: JSON.stringify({
-          token: token
-        }),
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
 
-        signal: controller.signal
-      });
+            body:
+              JSON.stringify({
+                token: token
+              }),
+
+            signal:
+              controller.signal
+          }
+        );
 
       clearTimeout(timeout);
 
+      /*
+       * Validar respuesta HTTP.
+       */
       if (!respuesta.ok) {
+
         throw new Error(
-          'Respuesta HTTP no válida: ' +
+          "HTTP " +
           respuesta.status
         );
+
       }
 
+      /*
+       * Convertir respuesta a JSON.
+       */
       let resultado;
 
       try {
-        resultado = await respuesta.json();
+
+        resultado =
+          await respuesta.json();
+
       } catch (errorJson) {
-        throw new Error(
-          'El servidor no devolvió JSON válido.'
+
+        console.error(
+          "Respuesta no JSON:",
+          errorJson
         );
+
+        throw new Error(
+          "Respuesta inválida del servidor."
+        );
+
       }
 
+      /*
+       * Verificación aprobada.
+       */
       if (
         resultado &&
-        (resultado.success === true || resultado.ok === true)
+        (
+          resultado.success === true ||
+          resultado.ok === true
+        )
       ) {
+
         const tiempoExpiracion =
           Date.now() +
           (
@@ -486,92 +665,78 @@
             1000
           );
 
-        localStorage.setItem(
-          'captcha_expiracion',
-          String(tiempoExpiracion)
-        );
+        try {
+
+          localStorage.setItem(
+            "captcha_expiracion",
+            String(tiempoExpiracion)
+          );
+
+        } catch (errorStorage) {
+
+          console.warn(
+            "No fue posible guardar la sesión:",
+            errorStorage
+          );
+
+        }
 
         cerrarModal();
 
-      } else {
-
-        mostrarEstado(
-          'Error: ' +
-          (
-            resultado?.message ||
-            resultado?.mensaje ||
-            'Validación rechazada'
-          ),
-          '#c0392b'
-        );
-      }
-
-    } catch (error) {
-      clearTimeout(timeout);
-
-      console.error(
-        'Error de verificación:',
-        error
-      );
-
-      if (error.name === 'AbortError') {
-
-        mostrarEstado(
-          'La verificación tardó demasiado. Revisa tu conexión e intenta nuevamente.',
-          '#c0392b'
-        );
-
-      } else {
-
-        mostrarEstado(
-          'Error de conexión con el servidor.',
-          '#c0392b'
-        );
-      }
-    }
-  }
-
-  window.addEventListener('load', function() {
-
-    setTimeout(function() {
-
-      const overlay =
-        document.getElementById('captchaOverlay');
-
-      /*
-       * Si ya estaba validado previamente,
-       * no hacemos la comprobación.
-       */
-      if (
-        overlay &&
-        overlay.classList.contains('oculto')
-      ) {
         return;
       }
 
-      const widget =
-        document.querySelector('.cf-turnstile');
+      /*
+       * Verificación rechazada.
+       */
+      let mensaje =
+        "Validación rechazada";
 
-      const iframe =
-        widget
-          ? widget.querySelector('iframe')
-          : null;
+      if (resultado) {
 
-      if (!iframe) {
+        mensaje =
+          resultado.message ||
+          resultado.mensaje ||
+          mensaje;
 
-        mostrarEstado(
-          'No fue posible cargar la verificación de seguridad. Revisa tu conexión e intenta nuevamente.',
-          '#c0392b'
-        );
-
-        console.error(
-          'Cloudflare Turnstile no creó el iframe.'
-        );
       }
 
-    }, 8000);
+      mostrarEstado(
+        "Error: " + mensaje,
+        "#c0392b"
+      );
 
-  });
+    } catch (error) {
+
+      clearTimeout(timeout);
+
+      console.error(
+        "Error de verificación:",
+        error
+      );
+
+      if (
+        error &&
+        error.name === "AbortError"
+      ) {
+
+        mostrarEstado(
+          "La verificación tardó demasiado. Revisa tu conexión e intenta nuevamente.",
+          "#c0392b"
+        );
+
+      } else {
+
+        mostrarEstado(
+          "Error de conexión con el servidor.",
+          "#c0392b"
+        );
+
+      }
+
+    }
+
+  }
 </script>
 
 
