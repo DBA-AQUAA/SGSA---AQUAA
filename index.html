@@ -478,6 +478,40 @@
       }
     }
   }
+
+  window.addEventListener('load', function () {
+
+  setTimeout(function () {
+
+    const widget =
+      document.querySelector('.cf-turnstile');
+
+    const iframe =
+      widget
+        ? widget.querySelector('iframe')
+        : null;
+
+    if (!iframe) {
+
+      const status =
+        document.getElementById(
+          'captchaStatus'
+        );
+
+      if (status) {
+        status.style.color = '#c0392b';
+        status.innerText =
+          'No fue posible cargar la verificación de seguridad. Revisa tu conexión e intenta nuevamente.';
+      }
+
+      console.error(
+        'Cloudflare Turnstile no creó el iframe.'
+      );
+    }
+
+  }, 8000);
+
+});
 </script>
 
 

@@ -550,7 +550,56 @@ td small { color: var(--muted); }
   }
 }
 
+/*-------------------------------------
+----------------------------------------
+----------------------------------------- */
  /* CSS PARA EMERGENTE VERIFICACION */
+
+ .captcha-overlay {
+  position: fixed;
+  inset: 0;
+
+  width: 100%;
+  min-height: 100dvh;
+
+  background: rgba(0, 0, 0, 0.75);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  z-index: 99999;
+}
+
+.captcha-overlay.oculto {
+  display: none !important;
+}
+
+.captcha-card {
+  position: relative;
+
+  background: #ffffff;
+
+  padding: 30px;
+  border-radius: 12px;
+
+  text-align: center;
+
+  width: min(420px, 100%);
+  max-width: 420px;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+
+  font-family: inherit;
+
+  z-index: 100000;
+}
+ /*
   .captcha-overlay {
     position: fixed;
     top: 0;
@@ -565,7 +614,7 @@ td small { color: var(--muted); }
     z-index: 99999;
   }
 
-  /* Ocultamiento forzado mediante !important */
+  /* Ocultamiento forzado mediante !important 
   .captcha-overlay.oculto {
     display: none !important;
   }
@@ -601,3 +650,4 @@ td small { color: var(--muted); }
     font-weight: bold;
     transition: all 0.3s ease;
   }
+*/
