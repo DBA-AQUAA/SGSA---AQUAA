@@ -556,8 +556,6 @@ td small { color: var(--muted); }
 /* CSS PARA EMERGENTE VERIFICACION */
 
 .captcha-overlay {
-  display: none !important;
-  
   position: fixed;
   inset: 0;
   width: 100%;
