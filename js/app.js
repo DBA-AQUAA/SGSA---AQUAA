@@ -19,7 +19,7 @@
 
   document.addEventListener("DOMContentLoaded", init);
 
-  /*
+  /* codigo anterior para mostrar el catalogo de productos
   function init() {
     cacheElements();
 
@@ -329,7 +329,10 @@
   function selectProduct(product) {
     state.selectedProduct = product;
     elements.productSearch.value = product.name;
-    elements.unit.value = "";
+
+    // La unidad proviene directamente del catálogo oficial.
+    elements.unit.value = product.unit || "";
+
     closeSearchResults();
     hideProductError();
     elements.quantity.focus();
