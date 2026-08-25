@@ -19,6 +19,7 @@
 
   document.addEventListener("DOMContentLoaded", init);
 
+  /*
   function init() {
     cacheElements();
 
@@ -45,6 +46,118 @@
     renderTable();
     updateReasonCounter();
     renderSpecificMaterialsTable();
+  }
+*/
+  async function init() {
+    cacheElements();
+
+    if (!hasRequiredElements()) {
+      console.error("SGSA: faltan elementos requeridos en index.html.");
+      return;
+    }
+
+    try {
+      window.SGSA_CATALOG = await cargarCatalogoDesdeServidor();
+    } catch (error) {
+      console.error(
+        "SGSA: no fue posible cargar el catálogo.",
+        error
+      );
+
+      showStatus(
+        "No fue posible cargar el catálogo de materiales. Intente recargar la página.",
+        "error"
+      );
+
+      disableForm();
+      return;
+    }
+
+    if (!isCatalogValid(window.SGSA_CATALOG)) {
+      showStatus(
+        "El catálogo de materiales está vacío o no es válido.",
+        "error"
+      );
+
+      disableForm();
+      return;
+    }
+
+    if (!isGeneralCatalogValid(window.SGSA_GENERAL_CATALOGS)) {
+      showStatus(
+        "No fue posible cargar los catálogos generales.",
+        "error"
+      );
+
+      disableForm();
+      return;
+    }
+
+    populateGeneralCatalogs();
+    populateCategories();
+    bindEvents();
+    renderTable();
+    updateReasonCounter();
+    renderSpecificMaterialsTable();
+  }
+  /*
+  */
+  async function cargarCatalogoDesdeServidor() {
+    const controller = new AbortController();
+
+    const timeoutId = window.setTimeout(
+      () => controller.abort(),
+      CONFIG.requestTimeoutMs
+    );
+
+    try {
+      const url = new URL(CONFIG.appsScriptUrl);
+
+      url.searchParams.set(
+        "accion",
+        "catalogo"
+      );
+
+      const response = await fetch(
+        url.toString(),
+        {
+          method: "GET",
+          cache: "no-store",
+          signal: controller.signal,
+          redirect: "follow"
+        }
+      );
+
+      const result = await parseJsonResponse(response);
+
+      if (!response.ok || !result.ok) {
+        throw new Error(
+          result.message ||
+          result.mensaje ||
+          "El servidor rechazó la consulta del catálogo."
+        );
+      }
+
+      if (!isCatalogValid(result.catalogo)) {
+        throw new Error(
+          "El servidor devolvió un catálogo vacío o no válido."
+        );
+      }
+
+      return result.catalogo;
+
+    } catch (error) {
+      if (error.name === "AbortError") {
+        throw new Error(
+          "La consulta del catálogo tardó demasiado."
+        );
+      }
+
+      throw error;
+
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
   }
 
   function cacheElements() {
