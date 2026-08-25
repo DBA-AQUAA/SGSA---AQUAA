@@ -1,3 +1,4 @@
+/*
 window.SGSA_CATALOG = {
   "Limpieza": [
     { id: "LIM001", name: "PINOL", unit: "LITRO" },
@@ -324,3 +325,8 @@ window.SGSA_CATALOG = {
     { id: "EP064", name: "CODERA Y ESPINILLERAS MOTOCICLISTA", unit: "PAR" }
   ]
 };
+
+prueba de que ya no es necesario este codigo
+
+
+*/
