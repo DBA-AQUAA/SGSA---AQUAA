@@ -328,14 +328,43 @@
 
   function selectProduct(product) {
     state.selectedProduct = product;
+
     elements.productSearch.value = product.name;
 
-    // La unidad proviene directamente del catálogo oficial.
-    elements.unit.value = product.unit || "";
+    seleccionarUnidadCatalogo(product.unit);
 
     closeSearchResults();
     hideProductError();
+
     elements.quantity.focus();
+  }
+
+  function seleccionarUnidadCatalogo(unidad) {
+    const valorUnidad = cleanText(unidad);
+
+    if (!valorUnidad) {
+      elements.unit.value = "";
+      return;
+    }
+
+    const opciones = Array.from(elements.unit.options);
+
+    const opcionExistente = opciones.find((option) =>
+      normalize(option.value) === normalize(valorUnidad)
+    );
+
+    if (opcionExistente) {
+      elements.unit.value = opcionExistente.value;
+      return;
+    }
+
+    const nuevaOpcion = document.createElement("option");
+
+    nuevaOpcion.value = valorUnidad;
+    nuevaOpcion.textContent = valorUnidad;
+
+    elements.unit.appendChild(nuevaOpcion);
+    elements.unit.value = valorUnidad;
   }
 
   function closeSearchResults() {
