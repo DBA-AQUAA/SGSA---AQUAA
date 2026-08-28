@@ -1,4 +1,7 @@
 /*
+prueba de que ya no es necesario este codigo
+
+
 window.SGSA_CATALOG = {
   "Limpieza": [
     { id: "LIM001", name: "PINOL", unit: "LITRO" },

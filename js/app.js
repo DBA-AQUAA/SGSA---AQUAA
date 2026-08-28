@@ -326,7 +326,7 @@
     elements.productSearch.setAttribute("aria-expanded", "true");
   }
 
-  /**  
+  /**  */
 
   function selectProduct(product) {
     state.selectedProduct = product;
@@ -340,22 +340,7 @@
 
     elements.quantity.focus();
   }
-*/
 
-  function selectProduct(product) {
-    console.log("PRODUCTO SELECCIONADO:", product);
-    console.log("UNIDAD RECIBIDA:", product.unit);
-
-    state.selectedProduct = product;
-    elements.productSearch.value = product.name;
-
-    seleccionarUnidadCatalogo(product.unit);
-
-    closeSearchResults();
-    hideProductError();
-
-    elements.quantity.focus();
-  }
 
   function seleccionarUnidadCatalogo(unidad) {
     const valorUnidad = cleanText(unidad);
